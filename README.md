@@ -10,3 +10,7 @@ Her defteri Colab'da açmak için yanındaki bağlantıya tıkla. Açılınca il
 | Lab 1 | Rakamları Okuyan Yapay Zekâ | [Colab'da aç](https://colab.research.google.com/github/akgulnursima0349/python-atolyesi/blob/main/notebooks/02_Lab1_Rakam_Tanima.ipynb) |
 | Lab 2 | Penguen Dedektifi | [Colab'da aç](https://colab.research.google.com/github/akgulnursima0349/python-atolyesi/blob/main/notebooks/03_Lab2_Penguen_Dedektifi.ipynb) |
 | Lab 3 | Yapay Zekâ Ressamı (K-Means) | [Colab'da aç](https://colab.research.google.com/github/akgulnursima0349/python-atolyesi/blob/main/notebooks/04_Lab3_KMeans_Renk_Sanati.ipynb) |
+
+## Python Atölyesi sitesi
+`site/` klasörü, öğrencilerin kullandığı web uygulamasıdır (Vite). `main` dalına her gönderimde GitHub Actions siteyi derleyip GitHub Pages'te yayınlar.
+Hesaplar ve ilerleme kaydı Supabase'de tutulur; kurulum adımları `site/supabase/KURULUM.md` içinde.
