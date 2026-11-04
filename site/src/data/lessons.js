@@ -234,7 +234,8 @@ export var LESSONS = [
       hints: ["Bir kutuyu kullanmadan önce oluşturmalısın. <code>mesaj</code> hangi kutuları kullanıyor?", "Puan önce 85 olmalı, sonra 5 artmalı. Mesaj, puan arttıktan <b>sonra</b> hazırlanmalı.", "<code>print(\"mesaj\")</code> tırnak içinde olduğu için ekrana \"mesaj\" kelimesini yazar."] },
     { type: "read", title: "Hazırsın!", html:
       "<p>Tebrikler, başlangıç eğitimini bitirdin! Artık gerçek Python defterine geçebilirsin.</p>" +
-      "<p>Yol haritasındaki sıradaki adım: <b>Notebook 00 · Python'a Giriş</b>. Onu bitirince, öğrendiklerini atölyedeki <b>istasyonlarda</b> uygulayacaksın.</p>", colab: "nb00" }
+      "<p>Şimdi bu aşamanın kısa <b>kontrolünü</b> çözeceksin. Sonra 2. adımda ilk gerçek Python defterini, <b>Notebook 00 · Python'a Giriş</b>'i Colab'da açacaksın.</p>" +
+      "<p>Defterin en sonunda bir <b>tamamlama kodu</b> hücresi var. Defteri bitirip o hücreyi çalıştırınca bir kod alacaksın; o kodu sitede yazınca defter tamamlanmış sayılacak.</p>" }
   ]
 }
 ];
@@ -244,11 +245,12 @@ export var LESSONS = [
    Repo değişirse sadece REPO satırını güncellemek yeter.
    ===================================================================== */
 export var REPO = "akgulnursima0349/python-atolyesi";
-export function colabUrl(file) { return "https://colab.research.google.com/github/" + REPO + "/blob/main/notebooks/" + file; }
+export function colabUrl(file, ogretmen) { return "https://colab.research.google.com/github/" + REPO + "/blob/main/notebooks/" + (ogretmen ? "ogretmen/" : "") + file; }
+/* kodOzet: defterin sonundaki "tamamlama kodu" hücresinin verdiği kodun SHA-256 özeti (kodun kendisi sitede yazmaz). */
 export var NOTEBOOKS = {
-  nb00: { file: "00_Python_Giris.ipynb", title: "Python'a Giriş", desc: "print, değişkenler, matematik, metinler, if, listeler, döngüler, fonksiyonlar, sözlükler. Sonunda sayı tahmin oyunu ve robot simülatörü.", stations: ["tahmin", "hata", "ajan", "piksel", "bot"] },
-  nb01: { file: "01_ML_Kutuphaneleri.ipynb", title: "Yapay Zekânın Alet Çantası", desc: "NumPy, Pandas, Matplotlib, Seaborn ve scikit-learn ile ilk tanışma. Elma mı portakal mı?" },
-  lab1: { file: "02_Lab1_Rakam_Tanima.ipynb", title: "Lab 1 · Rakamları Okuyan Yapay Zekâ", desc: "KNN ile el yazısı rakam tanıma. Sonunda kendi çizdiğin rakamı tahmin ettiriyorsun." },
-  lab2: { file: "03_Lab2_Penguen_Dedektifi.ipynb", title: "Lab 2 · Penguen Dedektifi", desc: "Karar ağaçları, ezberleme tuzağı ve rastgele orman." },
-  lab3: { file: "04_Lab3_KMeans_Renk_Sanati.ipynb", title: "Lab 3 · Yapay Zekâ Ressamı", desc: "K-Means ile kümeleme, şarj istasyonları ve pop-art." }
+  nb00: { file: "00_Python_Giris.ipynb", kodOzet: "4e6646c36af8667415b7eb182b31b3aea0b40bf4e04e8bc9d6c7be1f48eeeb00", title: "Python'a Giriş", desc: "print, değişkenler, matematik, metinler, if, listeler, döngüler, fonksiyonlar, sözlükler. Sonunda sayı tahmin oyunu ve robot simülatörü.", stations: ["tahmin", "hata", "ajan", "piksel", "bot"] },
+  nb01: { file: "01_ML_Kutuphaneleri.ipynb", kodOzet: "773e1b54949046f35b90d739404dda0d4f7c611fb44bd50ef966891e4c651bbe", title: "Yapay Zekânın Alet Çantası", desc: "NumPy, Pandas, Matplotlib, Seaborn ve scikit-learn ile ilk tanışma. Elma mı portakal mı?" },
+  lab1: { file: "02_Lab1_Rakam_Tanima.ipynb", kodOzet: "22dbe769b7229bc0dc3848923fdd5081ffafb2a75262af9d8f11760c242e83ad", title: "Lab 1 · Rakamları Okuyan Yapay Zekâ", desc: "KNN ile el yazısı rakam tanıma. Sonunda kendi çizdiğin rakamı tahmin ettiriyorsun." },
+  lab2: { file: "03_Lab2_Penguen_Dedektifi.ipynb", kodOzet: "d80871f9b47d0423d7bae50fa2db36287cd0c31201d3744f0d3e58a2bddb50fd", title: "Lab 2 · Penguen Dedektifi", desc: "Karar ağaçları, ezberleme tuzağı ve rastgele orman." },
+  lab3: { file: "04_Lab3_KMeans_Renk_Sanati.ipynb", kodOzet: "052dcce686d83ae589680cc564be6ed6b9a36ccc05646ef11c01c6c8e5cf2bd6", title: "Lab 3 · Yapay Zekâ Ressamı", desc: "K-Means ile kümeleme, şarj istasyonları ve pop-art." }
 };

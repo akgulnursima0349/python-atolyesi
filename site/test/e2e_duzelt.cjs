@@ -1,0 +1,25 @@
+const { chromium } = require('/home/claude/robi-python/test/node_modules/playwright');
+const path=require('path'), fs=require('fs'); const DIST=path.resolve(__dirname,'../dist');
+const OUT='/tmp/claude-0/-home-claude/246b35d1-2152-56a4-aef3-201d53db8cc1/scratchpad/v5'; fs.mkdirSync(OUT,{recursive:true});
+(async()=>{ const b=await chromium.launch({executablePath:'/opt/pw-browsers/chromium'}); const errs=[];
+ const p=await b.newPage({viewport:{width:1280,height:850}}); p.on('pageerror',e=>errs.push(String(e)));
+ await p.route('**/*', r=>{ const u=r.request().url(); if (u.startsWith('http://site/')) { const rel=decodeURIComponent(u.slice(12).split('#')[0])||'index.html';
+   if (rel==='ayarlar.js') return r.fulfill({body:'window.ATOLYE_AYAR={};',contentType:'application/javascript'});
+   const f=path.join(DIST,rel); return fs.existsSync(f)&&fs.statSync(f).isFile()? r.fulfill({path:f, contentType: f.endsWith('.js')?'application/javascript':undefined}) : r.fulfill({status:404,body:''}); } return r.abort(); });
+ const go=async(h)=>{ await p.evaluate(h=>location.hash=h,h); await p.waitForTimeout(350); };
+ await p.goto('http://site/index.html#ana'); await p.waitForTimeout(500);
+ await go('asama-2'); console.log('öğretmen linki (öğrenci):', await p.$$eval('a[href*="/ogretmen/"]',x=>x.length));
+ await p.fill('#kod-nb00','abc123'); await p.click('[data-nbform="nb00"] button'); await p.waitForTimeout(200); console.log('yanlış kod:', await p.$eval('#kodmsg-nb00',e=>e.innerText));
+ await p.fill('#kod-nb00','1878da'); await p.click('[data-nbform="nb00"] button'); await p.waitForTimeout(400); console.log('doğru kod:', await p.$eval('.nb-finish',e=>e.innerText));
+ console.log('kontrol kilidi:', await p.$eval('.test-card .test-foot',e=>e.innerText.replace(/\n/g,' ')));
+ await p.screenshot({path:OUT+'/nb.png'});
+ await p.keyboard.press('Control+Shift+S'); await p.waitForTimeout(300); await go('asama-5');
+ console.log('öğretmen çözümlü linkleri:', await p.$$eval('a[href*="/ogretmen/"]',x=>x.map(a=>a.href.split('/').pop())));
+ await go('ders-5'); for (let i=0;i<5;i++){ await p.click('#lNext'); await p.waitForTimeout(80);} 
+ console.log('adım', await p.$eval('.lnav-info',e=>e.innerText));
+ const sc = await p.$eval('.CodeMirror-scroll', e=>[e.scrollWidth, e.clientWidth]); console.log('editör scroll/client', sc);
+ await p.screenshot({path:OUT+'/editor.png'});
+ await go('ders-6'); const n = await p.$$eval('[data-seg]',x=>x.length); await p.click(`[data-seg="${n-1}"]`); await p.waitForTimeout(200);
+ console.log('ders6 son adım nbCard:', await p.$$eval('.nb',x=>x.length), '|', (await p.$eval('.prose',e=>e.innerText)).slice(0,80));
+ const m=await b.newPage({viewport:{width:390,height:844}}); await m.route('**/*', r=>p.context()&&r.request().url().startsWith('http://site/')?r.continue():r.abort()).catch(()=>{});
+ console.log('ERR', errs); await b.close(); })();

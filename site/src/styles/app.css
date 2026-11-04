@@ -230,7 +230,7 @@ main { padding-block: var(--s6) var(--s8); }
 .seg.cur { background: var(--hue); }
 .seg:disabled { cursor: not-allowed; }
 
-.split { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--s5); align-items: start; }
+.split { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr); gap: var(--s5); align-items: start; }
 @media (max-width: 980px) { .split { grid-template-columns: minmax(0, 1fr); } }
 .stack { display: grid; gap: var(--s4); min-width: 0; }
 .sheet { background: var(--paper); border: 1px solid var(--rule); border-radius: var(--r-lg); padding: var(--s5); min-width: 0; }
@@ -282,7 +282,7 @@ main { padding-block: var(--s6) var(--s8); }
 .hint pre, .fb pre, .prose pre.code { background: var(--screen); color: var(--screen-ink); border-radius: var(--r-sm); padding: 10px 12px; margin-top: 6px; overflow-x: auto; font-size: 14px; }
 
 /* CodeMirror 5 */
-.CodeMirror { font-family: var(--f-code); font-size: 16px; line-height: 1.65; height: auto; background: var(--screen); color: var(--screen-ink); position: relative; overflow: hidden; direction: ltr; }
+.CodeMirror { font-family: var(--f-code); font-size: 15px; line-height: 1.65; height: auto; background: var(--screen); color: var(--screen-ink); position: relative; overflow: hidden; direction: ltr; }
 .CodeMirror-lines { padding: 12px 0; cursor: text; min-height: 1px; }
 .CodeMirror pre.CodeMirror-line, .CodeMirror pre.CodeMirror-line-like { padding: 0 12px; border-radius: 0; border-width: 0; background: transparent; font-family: inherit; font-size: inherit; margin: 0; white-space: pre; word-wrap: normal; line-height: inherit; color: inherit; z-index: 2; position: relative; overflow: visible; -webkit-tap-highlight-color: transparent; font-variant-ligatures: contextual; }
 .CodeMirror-gutters { border-right: 1px solid var(--screen-rule); background: #14161e; white-space: nowrap; position: absolute; left: 0; top: 0; min-height: 100%; z-index: 3; }
@@ -709,3 +709,19 @@ body:has(.mock-band) { padding-bottom: 40px; }
 .move-row { grid-column: 1 / -1; display: flex; gap: var(--s2); align-items: center; flex-wrap: wrap; padding: var(--s2) var(--s3); background: var(--sunk); border-radius: var(--r-sm); }
 .move-row select, .inline-form select { border: 1px solid var(--rule-2); border-radius: var(--r-sm); padding: 8px 10px; background: var(--paper); font-size: var(--t-sm); max-width: 100%; }
 .inline-form select { flex: 1 1 220px; }
+
+/* Kod editörü: uzun satırlar için tarayıcının kendi yatay kaydırma çubuğu (CodeMirror'ın gizli çubukları yerine) */
+.CodeMirror-scroll { overflow-x: auto !important; overflow-y: hidden !important; margin-bottom: 0; margin-right: 0; padding-bottom: 0; }
+.CodeMirror-sizer { border-right-width: 12px; }
+.CodeMirror-scroll::-webkit-scrollbar { height: 10px; }
+.CodeMirror-scroll::-webkit-scrollbar-thumb { background: #3a4052; border-radius: 9px; }
+.CodeMirror-scroll::-webkit-scrollbar-track { background: #14161e; }
+.CodeMirror-scroll { scrollbar-color: #3a4052 #14161e; }
+.nb-finish { margin-top: var(--s4); padding-top: var(--s3); border-top: 1px solid var(--rule); }
+.nb-code { display: flex; flex-wrap: wrap; gap: var(--s2); align-items: center; }
+.nb-code label { font-size: var(--t-sm); font-weight: 600; color: var(--ink-2); }
+.nb-code input { width: 9.5ch; min-height: 40px; border: 1px solid var(--rule-2); border-radius: var(--r-sm); padding: 0 10px; font: 600 16px var(--f-code); letter-spacing: .12em; text-transform: uppercase; }
+.nb-code input:focus { outline: none; border-color: var(--hue); box-shadow: 0 0 0 3px var(--hue-tint); }
+.nb-done { display: inline-flex; align-items: center; gap: 6px; font-weight: 700; color: var(--ok); margin-right: var(--s2); }
+.nb-done .icon { width: 18px; height: 18px; }
+.nb-msg .bad { color: var(--bad); font-size: var(--t-sm); margin-top: 6px; }

@@ -8,7 +8,7 @@ const log=(...a)=>console.log(...a);
  async function page(w,h){ const p=await b.newPage({viewport:{width:w,height:h}});
    p.on('pageerror',e=>errs.push(String(e))); p.on('console',m=>{ if(m.type()==='error' && !/ERR_TUNNEL|Failed to load resource/.test(m.text())) errs.push(m.text()); });
    await p.route('**/*', r=>{ const u=r.request().url();
-     if (u.startsWith('http://site/')) { const f=path.join(DIST,decodeURIComponent(u.slice(12).split('#')[0].split('?')[0])||'index.html'); return fs.existsSync(f)&&fs.statSync(f).isFile()? r.fulfill({path:f, contentType: f.endsWith('.js')?'application/javascript':undefined}) : r.fulfill({status:404,body:''}); }
+     if (u.startsWith('http://site/')) { if (u.includes('/ayarlar.js')) return r.fulfill({body:'window.ATOLYE_AYAR={};',contentType:'application/javascript'}); const f=path.join(DIST,decodeURIComponent(u.slice(12).split('#')[0].split('?')[0])||'index.html'); return fs.existsSync(f)&&fs.statSync(f).isFile()? r.fulfill({path:f, contentType: f.endsWith('.js')?'application/javascript':undefined}) : r.fulfill({status:404,body:''}); }
      return r.abort(); }); return p; }
  const go=async(p,h)=>{ await p.evaluate(h=>location.hash=h,h); await p.waitForTimeout(250); };
  const setCode=(p,c)=>p.evaluate(c=>document.querySelector('.CodeMirror').CodeMirror.setValue(c),c);

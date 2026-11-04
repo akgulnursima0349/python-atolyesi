@@ -177,7 +177,7 @@ export function setupEditor(host, code, onChange, onRun) {
   cm = null;
   if (CodeMirror) {
     cm = CodeMirror(host, {
-      value: code, mode: "python", lineNumbers: true, indentUnit: 4, tabSize: 4, viewportMargin: Infinity,
+      value: code, mode: "python", lineNumbers: true, scrollbarStyle: "null", indentUnit: 4, tabSize: 4, viewportMargin: Infinity,
       extraKeys: {
         Tab: (c) => { if (c.somethingSelected()) c.indentSelection("add"); else c.replaceSelection("    "); },
         "Shift-Tab": (c) => c.indentSelection("subtract"),

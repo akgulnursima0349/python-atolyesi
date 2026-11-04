@@ -4,7 +4,8 @@ import { $, $$, esc, icon, save, persist, hooks, PHASES, phaseWorkDone, testDone
 import { bindShell } from "./pages.js";
 
 const root = () => $("#root");
-const PASS = 3; /* aşama kontrolünü geçmek için 5 sorudan en az 3 doğru */
+const PASS = 3;
+const KILIT = ["Önce bütün dersleri bitir", "Önce defteri bitirip tamamlama kodunu gir", "Önce istasyon görevlerini bitir", "Önce defteri ve Model Atölyesi'ni bitir", "Önce üç lab'ı bitirip kodlarını gir"]; /* aşama kontrolünü geçmek için 5 sorudan en az 3 doğru */
 
 function def(key) {
   if (key === "on") return { key, title: "Ön test", qs: ON_TEST, diag: true, phase: 0, mins: 10 };
@@ -32,7 +33,7 @@ export function testCard(key) {
   } else {
     const best = t ? t.best : null;
     status = best == null ? `5 soru · en az ${PASS} doğru gerekiyor` : `En iyi sonucun: <b>${best} / 5</b>${done ? " · geçtin" : ` · geçmek için en az ${PASS}`}`;
-    action = open ? `<a class="btn${done ? "" : " btn--primary"}" href="#${key}">${best == null ? "Kontrole başla" : "Tekrar çöz"} ${icon("right")}</a>` : `<span class="status">${icon("lock")} Önce bu aşamayı bitir</span>`;
+    action = open ? `<a class="btn${done ? "" : " btn--primary"}" href="#${key}">${best == null ? "Kontrole başla" : "Tekrar çöz"} ${icon("right")}</a>` : `<span class="status">${icon("lock")} ${KILIT[d.phase]}</span>`;
   }
   const txt = key === "on" ? "Başlamadan önce ne bildiğine bakalım. Bilmediğin soruda <b>Bilmiyorum</b>'u seç. Kursun sonunda aynı konulardan tekrar soracağız ve ne kadar ilerlediğini göreceksin."
     : key === "son" ? "Kursun başındaki ön testle aynı konular, farklı sorular. Bitirince ne kadar ilerlediğini konu konu görürsün."

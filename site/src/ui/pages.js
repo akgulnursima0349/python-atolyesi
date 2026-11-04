@@ -11,15 +11,66 @@ const root = () => $("#root");
 
 /* ---------- notebook kartı ---------- */
 export function nbCard(id) {
-  const nb = NOTEBOOKS[id], done = !!save.done["nb-" + id];
+  const nb = NOTEBOOKS[id], done = !!save.done["nb-" + id], t = !!save.teacher;
+  let act;
+  if (done) act = `<span class="nb-done">${icon("check")} Tamamlandı</span>${t ? `<button class="btn btn--quiet btn--sm" data-nbundo="${id}">İşareti kaldır</button>` : ""}`;
+  else act = `<form class="nb-code" data-nbform="${id}"><label for="kod-${id}">Tamamlama kodu</label>
+      <input id="kod-${id}" maxlength="6" autocomplete="off" spellcheck="false" placeholder="6 karakter" aria-describedby="kodnot-${id}">
+      <button class="btn">Onayla</button>${t ? `<button class="btn btn--quiet btn--sm" type="button" data-nbforce="${id}">Kodsuz işaretle</button>` : ""}</form>
+      <p class="nb-tip" id="kodnot-${id}">Kodu, defterin <b>en sonundaki</b> hücreyi çalıştırınca alırsın. O hücre, önemli bölümleri çalıştırıp çalıştırmadığını kontrol eder.</p><div class="nb-msg" id="kodmsg-${id}" role="alert"></div>`;
   return `<article class="nb${done ? " done" : ""}"><span class="nb-mark">${icon("notebook")}</span><div>
     <h3>${nb.title}</h3><span class="file">${nb.file}</span><p>${nb.desc}</p>
     <div class="nb-actions"><a class="btn btn--primary" href="${colabUrl(nb.file)}" target="_blank" rel="noopener">Colab'da aç ${icon("ext")}</a>
-    <button class="btn check-toggle" data-nb="${id}" aria-pressed="${done}">${done ? icon("check") + "Tamamlandı" : "Tamamladım olarak işaretle"}</button></div>
-    <p class="nb-tip">Defter açılınca önce <b>Dosya → Drive'a kopya kaydet</b>, böylece çalışman kaybolmaz.</p></div></article>`;
+      ${t ? `<a class="btn" href="${colabUrl(nb.file, true)}" target="_blank" rel="noopener">Çözümlü sürüm ${icon("ext")}</a>` : ""}</div>
+    <p class="nb-tip">Defter açılınca önce <b>Dosya → Drive'a kopya kaydet</b>, böylece çalışman kaybolmaz.${t ? " <b>Çözümlü sürüm</b> sadece öğretmen hesabında görünür." : ""}</p>
+    <div class="nb-finish">${act}</div></div></article>`;
+}
+/* SHA-256: tarayıcının kendi aracı (https'te), yoksa küçük yedek uygulama */
+function sha256js(ascii) {
+  const r = (v, a) => (v >>> a) | (v << (32 - a)), K = [], H = [];
+  let p = 2;
+  for (let c = 0; c < 64; p++) { let ok = true; for (let d = 2; d * d <= p; d++) if (p % d === 0) { ok = false; break; } if (ok) { if (c < 8) H[c] = (Math.pow(p, 1 / 2) * 2 ** 32) | 0; K[c++] = (Math.pow(p, 1 / 3) * 2 ** 32) | 0; } }
+  const bytes = Array.from(new TextEncoder().encode(ascii)), bits = bytes.length * 8;
+  bytes.push(0x80); while (bytes.length % 64 !== 56) bytes.push(0);
+  for (let i = 7; i >= 0; i--) bytes.push(i > 3 ? 0 : (bits >>> (i * 8)) & 255);
+  for (let j = 0; j < bytes.length; j += 64) {
+    const w = [];
+    for (let i = 0; i < 64; i++) {
+      if (i < 16) w[i] = (bytes[j + i * 4] << 24) | (bytes[j + i * 4 + 1] << 16) | (bytes[j + i * 4 + 2] << 8) | bytes[j + i * 4 + 3];
+      else { const a = w[i - 15], b = w[i - 2]; w[i] = (w[i - 16] + (r(a, 7) ^ r(a, 18) ^ (a >>> 3)) + w[i - 7] + (r(b, 17) ^ r(b, 19) ^ (b >>> 10))) | 0; }
+    }
+    let [a, b, c, d, e, f, g, h] = H;
+    for (let i = 0; i < 64; i++) {
+      const t1 = (h + (r(e, 6) ^ r(e, 11) ^ r(e, 25)) + ((e & f) ^ (~e & g)) + K[i] + w[i]) | 0, t2 = ((r(a, 2) ^ r(a, 13) ^ r(a, 22)) + ((a & b) ^ (a & c) ^ (b & c))) | 0;
+      h = g; g = f; f = e; e = (d + t1) | 0; d = c; c = b; b = a; a = (t1 + t2) | 0;
+    }
+    H[0] = (H[0] + a) | 0; H[1] = (H[1] + b) | 0; H[2] = (H[2] + c) | 0; H[3] = (H[3] + d) | 0; H[4] = (H[4] + e) | 0; H[5] = (H[5] + f) | 0; H[6] = (H[6] + g) | 0; H[7] = (H[7] + h) | 0;
+  }
+  return H.map((x) => (x >>> 0).toString(16).padStart(8, "0")).join("");
+}
+async function sha256(txt) {
+  try {
+    const b = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(txt));
+    return Array.from(new Uint8Array(b)).map((x) => x.toString(16).padStart(2, "0")).join("");
+  } catch (_) { return sha256js(txt); }
 }
 function bindNb(rerender) {
-  $$("[data-nb]").forEach((b) => { b.onclick = () => { const k = "nb-" + b.dataset.nb; save.done[k] = !save.done[k]; persist(); rerender(); }; });
+  const mark = (id, v) => { save.done["nb-" + id] = v; persist(); rerender(); };
+  $$("[data-nbundo]").forEach((b) => { b.onclick = () => mark(b.dataset.nbundo, false); });
+  $$("[data-nbforce]").forEach((b) => { b.onclick = () => mark(b.dataset.nbforce, true); });
+  $$("[data-nbform]").forEach((f) => {
+    const id = f.dataset.nbform, inp = $("input", f), msg = $("#kodmsg-" + id);
+    inp.oninput = () => { inp.value = inp.value.toUpperCase().replace(/[^0-9A-F]/g, ""); msg.innerHTML = ""; };
+    f.onsubmit = async (e) => {
+      e.preventDefault();
+      const kod = inp.value.trim();
+      if (kod.length !== 6) { msg.innerHTML = `<p class="bad">Kod 6 karakter olmalı.</p>`; return; }
+      let ok = false;
+      try { ok = (await sha256(kod)) === NOTEBOOKS[id].kodOzet; } catch (_) { ok = false; }
+      if (ok) { confetti(); mark(id, true); }
+      else msg.innerHTML = `<p class="bad">Bu kod bu deftere ait değil. Defterin en sonundaki hücreyi çalıştırıp çıkan kodu aynen yaz.</p>`;
+    };
+  });
 }
 
 /* =========================== GİRİŞ SAYFASI =========================== */
