@@ -116,9 +116,21 @@ select public.ben();
 select public.siniflarim();
 select pg_temp.olarak('00000000-0000-0000-0000-0000000000a1', false);
 select public.mudur_ogretmenler();
+\echo '--- 22. PIN okunabilir: rapor PIN içerir, yenileyince değişir, girişte hash uyumlu; yabancı öğretmen göremez'
+select pg_temp.olarak('00000000-0000-0000-0000-0000000000a1', false);
+select (public.sinif_raporu(:'sinif') -> 0 ->> 'pin') ~ '^[0-9]{4}$' as pin_gorunuyor;
+select (public.sinif_raporu(:'sinif') -> 0 ->> 'id') as k22 \gset
+select public.ogrenci_pin_yenile(:'k22') ->> 'pin' as yenipin \gset
+select (public.sinif_raporu(:'sinif') -> 0 ->> 'pin') = :'yenipin' as rapor_yeni_pin;
+reset role;
+select (select pin_hash = extensions.crypt(:'yenipin', pin_hash) from public.ogrenciler where id = :'k22') as hash_uyumlu;
+set role authenticated;
+select pg_temp.olarak('00000000-0000-0000-0000-0000000000a3', false);
+select public.sinif_raporu(:'sinif');
 reset role;
 \echo '--- 14. öğretmen sınıfı siler, her şey temizlenir'
 select pg_temp.olarak('00000000-0000-0000-0000-0000000000a1', false); set role authenticated;
 select public.sinif_sil(:'sinif');
 reset role;
 select (select count(*) from public.ogrenciler) ogr, (select count(*) from public.ilerleme) ilr, (select count(*) from public.oturumlar) otr;
+

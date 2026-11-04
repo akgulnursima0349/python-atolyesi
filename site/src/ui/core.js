@@ -14,6 +14,7 @@ import iLock from "lucide-static/icons/lock.svg?raw";
 import iRight from "lucide-static/icons/arrow-right.svg?raw";
 import iLeft from "lucide-static/icons/arrow-left.svg?raw";
 import iEye from "lucide-static/icons/eye.svg?raw";
+import iEyeOff from "lucide-static/icons/eye-off.svg?raw";
 import iBug from "lucide-static/icons/bug.svg?raw";
 import iTerminal from "lucide-static/icons/terminal.svg?raw";
 import iKey from "lucide-static/icons/key-round.svg?raw";
@@ -45,7 +46,7 @@ export const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
 export const esc = Atolye.esc;
 
 /* ---------- ikonlar (Lucide) ---------- */
-const RAW = { play: iPlay, reset: iReset, bulb: iBulb, check: iCheck, x: iX, lock: iLock, right: iRight, left: iLeft, eye: iEye, bug: iBug, terminal: iTerminal, key: iKey, grid: iGrid, chat: iChat, book: iBook, notebook: iNotebook, flask: iFlask, cap: iCap, cpu: iCpu, ext: iExt, chev: iChev, code: iCode, brain: iBrain, trophy: iTrophy, target: iTarget, clock: iClock, layers: iLayers, star: iStar, puzzle: iPuzzle, clipboard: iClipboard, apple: iApple, chart: iChart, user: iUser, logout: iLogout };
+const RAW = { play: iPlay, reset: iReset, bulb: iBulb, check: iCheck, x: iX, lock: iLock, right: iRight, left: iLeft, eye: iEye, eyeOff: iEyeOff, bug: iBug, terminal: iTerminal, key: iKey, grid: iGrid, chat: iChat, book: iBook, notebook: iNotebook, flask: iFlask, cap: iCap, cpu: iCpu, ext: iExt, chev: iChev, code: iCode, brain: iBrain, trophy: iTrophy, target: iTarget, clock: iClock, layers: iLayers, star: iStar, puzzle: iPuzzle, clipboard: iClipboard, apple: iApple, chart: iChart, user: iUser, logout: iLogout };
 export function icon(name, cls) {
   const svg = (RAW[name] || "").replace(/<!--[\s\S]*?-->/, "").replace(/\swidth="24"|\sheight="24"/g, "").replace(/class="[^"]*"/, "");
   return '<span class="icon' + (cls ? " " + cls : "") + '" aria-hidden="true">' + svg + "</span>";

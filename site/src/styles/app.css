@@ -691,7 +691,19 @@ tr.detail > td { background: var(--canvas); padding: var(--s4); white-space: nor
 .danger-zone { border-color: var(--bad-tint); display: grid; gap: var(--s2); justify-items: start; }
 .copy-fallback { width: 100%; font: 13px var(--f-code); margin-top: var(--s2); }
 .pin-sheet .row, .sheet .row { display: flex; gap: var(--s2); flex-wrap: wrap; align-items: center; }
+/* PIN'ler */
+.fb--warn { background: var(--warn-tint); border-color: transparent; color: var(--warn); }
+.fb--warn p { color: var(--ink); }
+.pin-flash { margin-bottom: var(--s4); }
+.pin-big { font-family: var(--f-code); font-size: 1.15em; font-weight: 700; letter-spacing: .12em; background: var(--paper); padding: 1px 8px; border-radius: 6px; }
+.st-name { display: flex; gap: var(--s2); align-items: baseline; flex-wrap: wrap; min-width: 0; }
+.pin-chip { font-size: 12px; color: var(--ink-3); white-space: nowrap; }
+.pin-chip code { font-family: var(--f-code); font-size: 13px; font-weight: 700; color: var(--ink); letter-spacing: .1em; background: var(--sunk); padding: 1px 6px; border-radius: 5px; }
+.pin-chip.none code { color: var(--warn); }
+#togglePins svg { width: 16px; height: 16px; vertical-align: -3px; }
+.pin-sheet .pin-cards { margin-top: var(--s3); }
 @media print {
+  body.print-pins #pinCards[hidden] { display: grid !important; }
   body.print-pins * { visibility: hidden; }
   body.print-pins #pinCards, body.print-pins #pinCards * { visibility: visible; }
   body.print-pins #pinCards { position: absolute; left: 0; top: 0; width: 100%; grid-template-columns: repeat(3, 1fr); }

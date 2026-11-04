@@ -79,7 +79,7 @@ export function mockApi() {
     sinif_raporu({ p_sinif }) {
       mine(p_sinif);
       return db.ogrenciler.filter((o) => o.sinif_id === p_sinif).sort((a, b) => low(a.takma_ad).localeCompare(low(b.takma_ad), "tr"))
-        .map((o) => ({ id: o.id, takma_ad: o.takma_ad, son_giris: o.son_giris, guncelleme: db.ilerleme[o.id] ? db.ilerleme[o.id].guncelleme : null, veri: db.ilerleme[o.id] ? db.ilerleme[o.id].veri : {} }));
+        .map((o) => ({ id: o.id, takma_ad: o.takma_ad, pin: o.pin || null, son_giris: o.son_giris, guncelleme: db.ilerleme[o.id] ? db.ilerleme[o.id].guncelleme : null, veri: db.ilerleme[o.id] ? db.ilerleme[o.id].veri : {} }));
     },
     ogrenci_giris({ p_kod, p_takma_ad, p_pin }) {
       if (!uid()) err("giris_gerekli"); if (isTeacher()) err("ogretmen_hesabi");

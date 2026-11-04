@@ -137,11 +137,11 @@ export async function showTeacher() {
   window.scrollTo(0, 0);
 }
 
-let CL = { id: null, tab: "ilerleme", data: null, cls: null, open: null, pins: null };
+let CL = { id: null, tab: "ilerleme", data: null, cls: null, open: null, show: false, flash: null };
 export async function showClass(id) {
   if (!guard()) return;
   setHue("test");
-  if (CL.id !== id) CL = { id, tab: "ilerleme", data: null, cls: null, open: null, pins: null };
+  if (CL.id !== id) CL = { id, tab: "ilerleme", data: null, cls: null, open: null, show: false, flash: null };
   panelShell(`<p class="muted" style="padding:40px 0">Yükleniyor…</p>`);
   try {
     const [cs, rows] = await Promise.all([teacherApi.siniflar(), teacherApi.rapor(id)]);
@@ -165,7 +165,7 @@ function renderClass() {
       <div class="class-head"><div><h1>${esc(c.ad)}</h1><p class="muted">${rows.length} öğrenci${c.benim ? "" : " · sahibi: " + esc(c.sahip_ad)}</p></div>
       <div class="code-box"><span>Sınıf kodu</span><b>${esc(c.kod)}</b><small>Öğrenciler girişte bunu yazacak</small></div></div>
       <div class="seg-tabs">${tab("ilerleme", "İlerleme")}${tab("testler", "Ön test · son test")}${tab("ogrenciler", "Öğrenciler ve PIN'ler")}${tab("ogretmenler", "Öğretmenler")}</div></header>${body}`);
-  $$("[data-tab]").forEach((b) => { b.onclick = () => { CL.tab = b.dataset.tab; CL.pins = null; renderClass(); }; });
+  $$("[data-tab]").forEach((b) => { b.onclick = () => { CL.tab = b.dataset.tab; CL.show = false; CL.flash = null; renderClass(); }; });
   bindClass();
   if (CL.tab === "ogretmenler") teachersTab();
 }
@@ -252,23 +252,30 @@ function testsTab(rows) {
       ${sons.length ? `<p class="muted small" style="margin-top:12px">Son testte %50'nin altında kalan konular vurgulandı: bunları sınıfta tekrar etmek iyi olur.</p>` : ""}</section>`;
 }
 
-/* --- Öğrenciler sekmesi --- */
+/* --- Öğrenciler sekmesi ---
+   PIN'ler her zaman görülebilir; ama sınıfta ekran yansıtılıyor olabileceği için varsayılan olarak gizli. */
 function studentsTab(rows) {
   const others = (CL.all || []).filter((c) => c.id !== CL.id);
-  const pins = CL.pins ? `<section class="sheet pin-sheet"><div class="label"><span>Yeni PIN'ler</span><span>bu liste bir daha gösterilmez</span></div>
-      <div class="pin-cards" id="pinCards">${CL.pins.map((p) => `<div class="pin-card"><small>Python Atölyesi · ${esc(CL.cls.ad)}</small><span>Sınıf kodu <b>${esc(CL.cls.kod)}</b></span><span>Takma ad <b>${esc(p.takma_ad)}</b></span><span>PIN <b>${esc(p.pin)}</b></span></div>`).join("")}</div>
-      ${CL.skipped && CL.skipped.length ? `<p class="muted small">Eklenmeyenler (çok kısa ya da bu sınıfta zaten var): ${CL.skipped.map(esc).join(", ")}</p>` : ""}
-      <div class="row"><button class="btn btn--primary" id="printPins">Kartları yazdır</button><button class="btn" id="copyPins">Listeyi kopyala</button></div><div id="copyMsg"></div></section>` : "";
-  return pins + `<section class="sheet"><div class="label"><span>Öğrenci ekle</span></div>
+  const withPin = rows.filter((r) => r.pin), noPin = rows.filter((r) => !r.pin), show = !!CL.show;
+  const pinOf = (r) => r.pin ? (show ? esc(r.pin) : "••••") : "—";
+  const flash = CL.flash ? `<div class="fb fb--ok pin-flash"><p>${CL.flash}</p>${CL.skipped && CL.skipped.length ? `<p class="muted small">Eklenmeyenler (çok kısa ya da bu sınıfta zaten var): ${CL.skipped.map(esc).join(", ")}</p>` : ""}</div>` : "";
+  const cards = withPin.length ? `<section class="sheet pin-sheet"><div class="label"><span>PIN kartları</span><span>${withPin.length} öğrenci</span></div>
+      <p class="muted small">PIN'ler sadece bu sınıfın öğretmenlerine ve müdüre görünür. Tahtaya yansıtırken gizli tut.</p>
+      <div class="row"><button class="btn" id="togglePins">${icon(show ? "eyeOff" : "eye")} ${show ? "PIN'leri gizle" : "PIN'leri göster"}</button><button class="btn btn--primary" id="printPins">Kartları yazdır</button><button class="btn" id="copyPins">Listeyi kopyala</button></div><div id="copyMsg"></div>
+      <div class="pin-cards" id="pinCards"${show ? "" : " hidden"}>${withPin.map((p) => `<div class="pin-card"><small>Python Atölyesi · ${esc(CL.cls.ad)}</small><span>Sınıf kodu <b>${esc(CL.cls.kod)}</b></span><span>Takma ad <b>${esc(p.takma_ad)}</b></span><span>PIN <b>${esc(p.pin)}</b></span></div>`).join("")}</div></section>` : "";
+  const old = noPin.length ? `<section class="sheet"><div class="fb fb--warn"><p><b>${noPin.length} öğrencinin PIN'i görünmüyor.</b> Bu öğrenciler PIN'ler gizli saklanırken eklenmişti; eski PIN'leri hâlâ çalışır ama okunamaz. Yeni PIN üretirsen buradan her zaman görebilirsin. (Bu öğrenciler bir sonraki girişte yeni PIN'i yazmalı.)</p>
+      <div class="row"><button class="btn btn--primary" id="renewMissing">Bu ${noPin.length} öğrenciye yeni PIN üret</button></div></div></section>` : "";
+  return flash + old + cards + `<section class="sheet"><div class="label"><span>Öğrenci ekle</span></div>
       <form id="addStudents" class="stack"><textarea id="names" rows="5" placeholder="Her satıra bir takma ad yaz&#10;Elif K.&#10;Mert A.&#10;Kartal" aria-label="Takma adlar"></textarea>
       <div class="row"><button class="btn btn--primary">Öğrencileri ekle ve PIN üret</button><span class="muted small">Gerçek ad-soyad yerine takma ad ya da ad + soyadın baş harfi.</span></div><div id="addMsg"></div></form></section>
     <section class="sheet"><div class="label"><span>Sınıftaki öğrenciler</span><span>${rows.length}</span></div>
-      ${rows.length ? `<ul class="st-list">${rows.map((r) => `<li><b>${esc(r.takma_ad)}</b><span class="muted small">${r.son_giris ? "son giriş " + fmtWhen(r.son_giris) : "hiç girmedi"}</span>
+      ${rows.length ? `<ul class="st-list">${rows.map((r) => `<li><span class="st-name"><b>${esc(r.takma_ad)}</b><span class="pin-chip${r.pin ? "" : " none"}" title="${r.pin ? "PIN" : "PIN görünmüyor: yenile"}">PIN <code>${pinOf(r)}</code></span></span><span class="muted small">${r.son_giris ? "son giriş " + fmtWhen(r.son_giris) : "hiç girmedi"}</span>
         <span class="st-act"><button class="btn btn--sm" data-pin="${r.id}">PIN yenile</button>${others.length ? `<button class="btn btn--sm" data-move="${r.id}">Taşı</button>` : ""}<button class="btn btn--sm btn--quiet danger" data-del="${r.id}">Sil</button></span>
         <div class="move-row" id="mv-${r.id}" hidden><select aria-label="Hedef sınıf">${others.map((c) => `<option value="${c.id}">${esc(c.ad)} (${esc(c.kod)})</option>`).join("")}</select><button class="btn btn--sm btn--primary" data-moveok="${r.id}">Bu sınıfa taşı</button><span class="muted small">İlerlemesi ve PIN'i aynı kalır, girişte yeni sınıfın kodunu yazar.</span></div></li>`).join("")}</ul>` : `<p class="muted">Henüz öğrenci yok.</p>`}
     </section>
     ${CL.cls && (CL.cls.benim || cloud.me.mudur) ? "" : "<!--"}<section class="sheet danger-zone"><div class="label"><span>Sınıfı sil</span></div><p class="muted small">Sınıf, içindeki bütün öğrenciler ve ilerleme kayıtları kalıcı olarak silinir.</p><button class="btn btn--quiet danger" id="delClass">Sınıfı sil</button></section>${CL.cls && (CL.cls.benim || cloud.me.mudur) ? "" : "-->"}`;
 }
+async function reloadRows() { CL.data = (await teacherApi.rapor(CL.id)).map((x) => ({ ...x, o: ozet(x.veri) })); }
 
 /* İki aşamalı onay: ilk tıklamada "Emin misin?" olur, 4 sn içinde ikinci tıklama işlemi yapar */
 function confirmBtn(b, label, fn) {
@@ -289,13 +296,15 @@ function bindClass() {
     const b = $("button", e.target); b.disabled = true;
     try {
       const r = await teacherApi.ogrenciEkle(CL.id, names);
-      CL.pins = r.eklenen; CL.skipped = r.atlanan;
-      CL.data = (await teacherApi.rapor(CL.id)).map((x) => ({ ...x, o: ozet(x.veri) }));
-      renderClass();
+      CL.skipped = r.atlanan; CL.show = true;
+      CL.flash = r.eklenen.length ? `<b>${r.eklenen.length} öğrenci eklendi.</b> PIN'leri aşağıdaki kartlarda; istediğin zaman bu sekmeden yeniden yazdırabilirsin.` : "Kimse eklenmedi.";
+      await reloadRows(); renderClass();
     } catch (er) { $("#addMsg").innerHTML = `<div class="fb fb--bad"><p>${hataMetni(er)}</p></div>`; b.disabled = false; }
   };
   $$("[data-pin]").forEach((b) => confirmBtn(b, "Yeni PIN üretilsin mi?", async () => {
-    const r = await teacherApi.pinYenile(b.dataset.pin); CL.pins = [r]; CL.skipped = []; renderClass();
+    const r = await teacherApi.pinYenile(b.dataset.pin); CL.skipped = [];
+    CL.flash = `<b>${esc(r.takma_ad)}</b> için yeni PIN: <code class="pin-big">${esc(r.pin)}</code> · Eski PIN artık çalışmaz, açık oturumları da kapandı.`;
+    await reloadRows(); renderClass();
   }));
   $$("[data-del]").forEach((b) => confirmBtn(b, "Emin misin? Silinecek", async () => {
     await teacherApi.ogrenciSil(b.dataset.del); CL.data = CL.data.filter((r) => r.id !== b.dataset.del); renderClass();
@@ -307,9 +316,16 @@ function bindClass() {
     catch (e) { $("#addMsg").innerHTML = `<div class="fb fb--bad"><p>${hataMetni(e)}</p></div>`; b.disabled = false; }
   }; });
   if ($("#delClass") && canManage()) confirmBtn($("#delClass"), "Emin misin? Her şey silinecek", async () => { await teacherApi.sinifSil(CL.id); CL = { id: null }; location.hash = "ogretmen"; });
+  if ($("#togglePins")) $("#togglePins").onclick = () => { CL.show = !CL.show; renderClass(); };
+  if ($("#renewMissing")) confirmBtn($("#renewMissing"), "Emin misin? Yeni PIN'ler üretilecek", async () => {
+    const list = CL.data.filter((r) => !r.pin);
+    for (const r of list) await teacherApi.pinYenile(r.id);
+    CL.show = true; CL.skipped = []; CL.flash = `<b>${list.length} öğrenciye yeni PIN üretildi.</b> Kartları yazdırıp dağıtabilirsin.`;
+    await reloadRows(); renderClass();
+  });
   if ($("#printPins")) $("#printPins").onclick = () => { document.body.classList.add("print-pins"); window.print(); setTimeout(() => document.body.classList.remove("print-pins"), 500); };
   if ($("#copyPins")) $("#copyPins").onclick = async () => {
-    const txt = `Python Atölyesi · ${CL.cls.ad} · Sınıf kodu: ${CL.cls.kod}\n` + CL.pins.map((p) => `${p.takma_ad}\tPIN: ${p.pin}`).join("\n");
+    const txt = `Python Atölyesi · ${CL.cls.ad} · Sınıf kodu: ${CL.cls.kod}\n` + CL.data.filter((p) => p.pin).map((p) => `${p.takma_ad}\tPIN: ${p.pin}`).join("\n");
     try { await navigator.clipboard.writeText(txt); $("#copyMsg").innerHTML = `<p class="muted small">Kopyalandı.</p>`; }
     catch (_) { $("#copyMsg").innerHTML = `<textarea class="copy-fallback" rows="6" readonly>${esc(txt)}</textarea>`; $("#copyMsg textarea").select(); }
   };

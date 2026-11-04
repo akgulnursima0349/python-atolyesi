@@ -33,12 +33,12 @@ const log=(...a)=>console.log(...a);
  await login('ali@k.com'); await go('ogretmen'); log('Ali sınıfları:', (await txt('#classList')).replace(/\n/g,' | '));
  await go(A); log('Ali A başlığı:', await txt('.class-head p')); await p.click('[data-tab="ogrenciler"]');
  log('Ali için sil düğmesi (ortak):', await p.$$eval('#delClass',x=>x.length));
- const rowsIds = await p.$$eval('[data-move]', x=>x.map(e=>e.dataset.move)); const names = await p.$$eval('.st-list li > b', x=>x.map(e=>e.innerText));
+ const rowsIds = await p.$$eval('[data-move]', x=>x.map(e=>e.dataset.move)); const names = await p.$$eval('.st-list .st-name > b', x=>x.map(e=>e.innerText));
  log('öğrenciler:', names);
  const iK = names.indexOf('Kartal'), iD = names.indexOf('Deniz');
  await p.click(`[data-move="${rowsIds[iK]}"]`); await p.click(`[data-moveok="${rowsIds[iK]}"]`); await p.waitForTimeout(400); log('Kartal taşıma:', await txt('#addMsg'));
  await p.click(`[data-move="${rowsIds[iD]}"]`); await p.click(`[data-moveok="${rowsIds[iD]}"]`); await p.waitForTimeout(500);
- log('Deniz taşındı, A kalan:', await p.$$eval('.st-list li > b', x=>x.map(e=>e.innerText)));
+ log('Deniz taşındı, A kalan:', await p.$$eval('.st-list .st-name > b', x=>x.map(e=>e.innerText)));
  await p.screenshot({path:OUT+'/r_students.png', fullPage:true});
  await out();
  // müdür

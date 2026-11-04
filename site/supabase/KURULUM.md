@@ -45,3 +45,7 @@ Repo ayarlarında **Settings → Pages → Source: GitHub Actions** seç. Her g�
 - Ücretsiz Supabase projesi **1 hafta hiç kullanılmazsa duraklatılır** (yaz tatili gibi). Panelden tek tıkla yeniden başlatılır, veriler kaybolmaz.
 - Öğrenciden e-posta, gerçek ad ya da doğum tarihi alınmaz. Takma ad olarak ad + soyadın baş harfi (ör. "Elif K.") yeterli.
 - Kurumunun velilere verdiği bilgilendirme metnine, öğrenci ilerlemesinin takma adla bir bulut veritabanında (Avrupa Birliği içinde) tutulduğunu eklemek iyi olur.
+- PIN'ler sınıf sayfasındaki **Öğrenciler ve PIN'ler** sekmesinde her zaman görülebilir ve kartlar yeniden yazdırılabilir. Sadece o sınıfın öğretmenleri ve müdür görür. Ekran tahtaya yansıtılıyorsa PIN'ler gizli açılır, **PIN'leri göster** ile görünür.
+
+## Güncellemeler
+Sitede bir veritabanı değişikliği olduğunda (ör. PIN'lerin görünür olması) Supabase'de **SQL Editor → New query**'ye `kurulum.sql` dosyasının tamamını yeniden yapıştırıp **Run** demen yeterli. Dosya tekrar çalıştırılmaya uygundur: mevcut öğretmenler, sınıflar, öğrenciler ve ilerleme silinmez, kurum ve müdür kodların da aynı kalır.

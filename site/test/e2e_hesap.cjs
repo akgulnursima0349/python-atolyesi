@@ -30,7 +30,7 @@ const log=(...a)=>console.log(...a);
  const kod = await txt('.code-box b'); const sinifHash = await p.evaluate(()=>location.hash);
  await p.click('[data-tab="ogrenciler"]'); await p.fill('#names','Kartal\nYıldız Ece\nkartal\nX'); await p.click('#addStudents button'); await p.waitForTimeout(700);
  const pins = await p.$$eval('.pin-card', cs=>cs.map(c=>({ad:c.querySelectorAll('b')[1].innerText, pin:c.querySelectorAll('b')[2].innerText})));
- log('PIN kartları:', JSON.stringify(pins), '| atlanan:', await txt('.pin-sheet p.muted'));
+ log('PIN kartları:', JSON.stringify(pins), '| atlanan:', await txt('.pin-flash p.muted'), '| kartlar görünür:', await p.isVisible('#pinCards'));
  await p.screenshot({path:OUT+'/pins.png', fullPage:true});
  await p.click('#logoutBtn'); await p.waitForTimeout(500);
  log('çıkış →', await p.evaluate(()=>location.hash));
@@ -61,7 +61,17 @@ const log=(...a)=>console.log(...a);
  await p.screenshot({path:OUT+'/class_progress.png', fullPage:true});
  await p.click('[data-tab="testler"]'); await p.waitForTimeout(200); await p.screenshot({path:OUT+'/class_tests.png', fullPage:true});
  await p.click('[data-tab="ogrenciler"]'); await p.click('[data-pin]'); await p.waitForTimeout(100); log('onay düğmesi:', await txt('[data-pin].armed')); await p.click('[data-pin]'); await p.waitForTimeout(400);
- log('yeni PIN kartı:', await txt('.pin-card'));
+ log('yeni PIN mesajı:', await txt('.pin-flash'));
+ log('listede PIN (gizli):', await p.$$eval('.pin-chip code', c=>c.map(x=>x.innerText)), '| kartlar gizli:', !(await p.isVisible('#pinCards')));
+ await p.click('#togglePins'); await p.waitForTimeout(150);
+ log('göster sonrası:', await p.$$eval('.pin-chip code', c=>c.map(x=>x.innerText)), '| kartlar:', await p.$$eval('.pin-card', c=>c.length));
+ // eski sistemden kalan, PIN'i okunamayan öğrenci
+ await p.evaluate(()=>{ for (const k of Object.keys(localStorage)) { try { const d=JSON.parse(localStorage[k]); if (d && d.ogrenciler) { d.ogrenciler.forEach(o=>{ if (o.takma_ad==='Kartal') delete o.pin; }); localStorage[k]=JSON.stringify(d); } } catch(_){} } });
+ await p.reload(); await p.waitForTimeout(900); await p.click('[data-tab="ogrenciler"]'); await p.waitForTimeout(200);
+ log('eksik PIN uyarısı:', await txt('.fb--warn p'), '| chip:', await p.$$eval('.pin-chip code', c=>c.map(x=>x.innerText)));
+ await p.screenshot({path:OUT+'/class_students_eski.png', fullPage:true});
+ await p.click('#renewMissing'); await p.click('#renewMissing'); await p.waitForTimeout(500);
+ log('toplu yenile:', await txt('.pin-flash'), '| uyarı kaldı mı:', await p.isVisible('.fb--warn'), '| chip:', await p.$$eval('.pin-chip code', c=>c.map(x=>x.innerText)));
  await p.screenshot({path:OUT+'/class_students.png', fullPage:true});
  await go('asama-3'); log('öğretmen kursu gezebiliyor (kilitsiz):', await p.$$eval('.station-card', c=>c.length));
  // mobil

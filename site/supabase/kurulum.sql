@@ -45,6 +45,9 @@ create table if not exists public.ogrenciler (
   olusturma  timestamptz not null default now(),
   son_giris  timestamptz
 );
+-- PIN'in okunabilir kopyası: sadece sınıfın öğretmenleri ve müdür görür (sinif_raporu üzerinden).
+-- Girişte yine pin_hash kullanılır. Eski kurulumlarda bu sütun boş kalır; öğretmen "PIN yenile" ile doldurur.
+alter table public.ogrenciler add column if not exists pin text;
 create unique index if not exists ogrenciler_sinif_ad on public.ogrenciler (sinif_id, lower(takma_ad));
 
 -- Bir sınıfa sonradan eklenen ortak öğretmenler (sınıfı açan öğretmen siniflar.ogretmen_id'dedir)
@@ -273,10 +276,10 @@ begin
   delete from public.siniflar where id = p_sinif;
 end $$;
 
--- Öğrenci ekle: takma adların listesi → her biri için yeni PIN (PIN'ler yalnızca bu cevapta görünür)
+-- Öğrenci ekle: takma adların listesi → her biri için yeni PIN
 create or replace function public.ogrenci_ekle(p_sinif uuid, p_adlar text[]) returns jsonb
 language plpgsql volatile security definer set search_path = public, extensions as $$
-declare a text; pin text; sonuc jsonb := '[]'::jsonb; atlanan jsonb := '[]'::jsonb;
+declare a text; yeni_pin text; sonuc jsonb := '[]'::jsonb; atlanan jsonb := '[]'::jsonb;
 begin
   perform public._sinifim(p_sinif);
   if coalesce(array_length(p_adlar, 1), 0) > 60 then raise exception 'cok_fazla'; end if;
@@ -287,24 +290,24 @@ begin
        or exists (select 1 from public.ogrenciler where sinif_id = p_sinif and lower(takma_ad) = lower(a)) then
       atlanan := atlanan || to_jsonb(a); continue;
     end if;
-    pin := public._rastgele('0123456789', 4);
-    insert into public.ogrenciler (sinif_id, takma_ad, pin_hash) values (p_sinif, a, crypt(pin, gen_salt('bf', 8)));
-    sonuc := sonuc || jsonb_build_object('takma_ad', a, 'pin', pin);
+    yeni_pin := public._rastgele('0123456789', 4);
+    insert into public.ogrenciler (sinif_id, takma_ad, pin_hash, pin) values (p_sinif, a, crypt(yeni_pin, gen_salt('bf', 8)), yeni_pin);
+    sonuc := sonuc || jsonb_build_object('takma_ad', a, 'pin', yeni_pin);
   end loop;
   return jsonb_build_object('eklenen', sonuc, 'atlanan', atlanan);
 end $$;
 
 create or replace function public.ogrenci_pin_yenile(p_ogrenci uuid) returns jsonb
 language plpgsql volatile security definer set search_path = public, extensions as $$
-declare s uuid; pin text; ad text;
+declare s uuid; yeni_pin text; ad text;
 begin
   select sinif_id, takma_ad into s, ad from public.ogrenciler where id = p_ogrenci;
   if s is null then raise exception 'yetki_yok'; end if;
   perform public._sinifim(s);
-  pin := public._rastgele('0123456789', 4);
-  update public.ogrenciler set pin_hash = crypt(pin, gen_salt('bf', 8)) where id = p_ogrenci;
+  yeni_pin := public._rastgele('0123456789', 4);
+  update public.ogrenciler set pin_hash = crypt(yeni_pin, gen_salt('bf', 8)), pin = yeni_pin where id = p_ogrenci;
   delete from public.oturumlar where ogrenci_id = p_ogrenci;   -- eski cihazlardan çıkış
-  return jsonb_build_object('takma_ad', ad, 'pin', pin);
+  return jsonb_build_object('takma_ad', ad, 'pin', yeni_pin);
 end $$;
 
 create or replace function public.ogrenci_sil(p_ogrenci uuid) returns void
@@ -336,7 +339,7 @@ create or replace function public.sinif_raporu(p_sinif uuid) returns jsonb
 language plpgsql stable security definer set search_path = public as $$
 begin
   perform public._sinifim(p_sinif);
-  return coalesce((select jsonb_agg(jsonb_build_object('id', o.id, 'takma_ad', o.takma_ad, 'son_giris', o.son_giris,
+  return coalesce((select jsonb_agg(jsonb_build_object('id', o.id, 'takma_ad', o.takma_ad, 'pin', o.pin, 'son_giris', o.son_giris,
            'guncelleme', i.guncelleme, 'veri', coalesce(i.veri, '{}'::jsonb)) order by lower(o.takma_ad))
            from public.ogrenciler o left join public.ilerleme i on i.ogrenci_id = o.id where o.sinif_id = p_sinif), '[]'::jsonb);
 end $$;
