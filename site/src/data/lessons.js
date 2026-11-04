@@ -15,6 +15,7 @@ export var LESSONS = [
       "<p>Bilgisayara verdiğimiz sıralı talimatlara <b>program</b> denir. Kodla Büyü'de bu talimatları blokları üst üste koyarak veriyordunuz. Gerçek dünyada programcılar aynı talimatları <b>yazı olarak</b> yazar.</p>" +
       "<div class=\"big-fact\"><span>01001000 01101001</span><p>İşlemcinin anladığı tek şey <b>0 ve 1</b>'lerdir: elektrik var ya da yok. Yukarıdaki satır bilgisayar için \"Hi\" demek.</p></div>" +
       "<p>İnsanlar 0 ve 1 ile konuşamaz. Bu yüzden arada bir <b>tercüman</b> kullanırız: <b>programlama dili</b>. Biz anlaşılır bir dille yazarız, bilgisayar onu 0 ve 1'lere çevirir.</p>" },
+    { type: "scene", scene: "ikilik", title: "Harfler 0 ve 1 olunca", html: "<p>Bir kelime yaz ve bilgisayarın onu nasıl sakladığını gör.</p>" },
     { type: "quiz", q: "Bilgisayarın işlemcisi doğrudan hangisini anlar?", options: ["Türkçe", "Python", "0 ve 1'ler", "Kodla Büyü blokları"], answer: 2,
       why: "İşlemci sadece 0 ve 1'leri anlar. Python, Türkçe ya da bloklar önce 0 ve 1'e çevrilmek zorundadır." },
     { type: "read", title: "Merhaba Python", html:
@@ -52,6 +53,7 @@ export var LESSONS = [
         "<div style=\"--c:#ff7a6b\"><b>Makine dili</b><span>En alt · Sadece 0 ve 1. İşlemcinin doğrudan anladığı tek dil.</span></div>" +
       "</div>" +
       "<p><b>Yüksek seviyeli</b> (gelişmiş) bir dil, bilgisayarın iç detaylarını senin yerine halleder. Sayının bellekte nerede duracağını, ne kadar yer kaplayacağını düşünmezsin. Sen sadece <b>ne yapmak istediğini</b> yazarsın.</p>" },
+    { type: "scene", scene: "merdiven", title: "Merdivenden in", html: "<p>Ekrana \"Merhaba\" yazdıran aynı programın her basamakta nasıl göründüğüne bak.</p>" },
     { type: "read", title: "Aynı iş, farklı basamaklar", html:
       "<p>Ekrana <b>Merhaba</b> yazdırmak için her basamakta yazılması gereken kod (kısaltılmış örnekler):</p>" +
       "<div class=\"cmp-grid\">" +
@@ -72,6 +74,7 @@ export var LESSONS = [
         "<div><h4>Derleyici (compiler)</h4><p>Arduino IDE'de <b>Yükle</b>'ye bastığında kodunun <b>tamamı</b> önce makine diline çevrilir, sonra karta yüklenir. Kitabın tamamını önceden çeviren bir çevirmen gibi.</p></div>" +
         "<div><h4>Yorumlayıcı (interpreter)</h4><p>Python kodu <b>satır satır</b> okur ve hemen çalıştırır. Konuşmayı anında çeviren bir tercüman gibi. Bu yüzden bir satırı değiştirip hemen sonucunu görebiliriz.</p></div>" +
       "</div>" },
+    { type: "scene", scene: "derleyici", title: "Derleyici ve yorumlayıcı yarışıyor", html: "<p>Aynı programı iki yöntemle çalıştır. Önce hatalı haliyle, sonra düzeltip dene.</p>" },
     { type: "quiz", q: "Python bu programı çalıştırınca ekranda ne görürüz?", code: "print(\"1\")\nprint(\"2\")\nprint(sayi)\nprint(\"4\")",
       options: ["Hiçbir şey, program hiç çalışmaz", "1 ve 2 yazılır, 3. satırda hata verip durur", "1, 2 ve 4 yazılır, hatalı satır atlanır", "Sadece 4 yazılır"], answer: 1,
       why: "Yorumlayıcı satır satır çalışır. İlk iki satır sorunsuz çalışır. 3. satırda <code>sayi</code> diye bir şey tanımlanmadığı için hata verir ve <b>orada durur</b>. 4. satıra hiç gelmez." },
@@ -101,6 +104,7 @@ export var LESSONS = [
         "<tr><td>Yorum</td><td><code>// not</code></td><td><code># not</code></td></tr>" +
       "</tbody></table></div>" +
       "<p>En büyük fark: C++'ta değişkenin <b>tipini</b> (<code>int</code>, <code>float</code>…) sen söylersin. Python ise tipi kendisi anlar.</p>" },
+    { type: "scene", scene: "range", title: "range() nasıl sayar?", html: "<p>Kaydırıcılarla oyna: Python'daki <code>range</code> ile Arduino'daki <code>for</code> aynı sayıları nasıl üretiyor?</p>" },
     { type: "sort", title: "Hangisi hangi dil?", html: "<p>Her satır için hangi dilde yazıldığını seç.</p>", cats: ["Arduino (C++)", "Python"],
       items: [["int x = 5;", 0], ["x = 5", 1], ["Serial.println(x);", 0], ["print(x)", 1], ["for i in range(10):", 1], ["if (x > 3) {", 0], ["// motoru çalıştır", 0], ["# motoru çalıştır", 1], ["while True:", 1], ["void loop() {", 0]],
       why: "İpuçları: <code>;</code> ve <code>{</code> görürsen C++. <code>:</code> ile biten satırlar ve <code>#</code> ile yorumlar Python." },
@@ -119,6 +123,8 @@ export var LESSONS = [
     { type: "predict", title: "Üçer üçer saymak", html: "<p>Arduino'da <code>for (int i = 2; i &lt; 10; i += 3)</code> yazardın. Python'da aynı döngü <code>range</code>'e üçüncü bir sayı vererek yazılır. Bu sayı her turda ne kadar artacağını söyler. Ekrana ne yazar?</p>",
       code: "for i in range(2, 10, 3):\n    print(i)",
       why: "<code>range(2, 10, 3)</code>: 2'den başla, 10'a gelmeden dur, her seferinde 3 artır. 2, 5, 8. Bir sonraki 11 olurdu ama 10'u geçtiği için yazılmaz." },
+    { type: "trace", title: "Döngünün içine bak", html: "<p>Bir döngü çalışırken kutularda neler olduğunu adım adım izle. Her turda <b>sayi</b> bir sonraki değeri alıyor, <b>toplam</b> da büyüyor.</p>",
+      code: "toplam = 0\nfor sayi in range(1, 5):\n    toplam = toplam + sayi\n    print(sayi, toplam)\nprint(\"Toplam:\", toplam)" },
     { type: "read", title: "Neden robotlarda C++, yapay zekâda Python?", html:
       "<p><b>Arduino</b> kartındaki işlemci küçük, belleği çok az. Orada hızlı ve hafif çalışan <b>C++</b> idealdir.</p>" +
       "<p><b>Yapay zekâ</b> ise çok büyük verilerle çalışır ve hazır araçlara ihtiyaç duyar. Python'da bunlar için hazır <b>kütüphaneler</b> var (NumPy, scikit-learn). Kursun ikinci yarısında bunları kullanacağız.</p>" +
@@ -141,6 +147,7 @@ export var LESSONS = [
         "<li><b>İki nokta ve girinti.</b> <code>if</code>, <code>for</code>, <code>while</code>, <code>def</code> satırları <code>:</code> ile biter. Altındaki komutlar <b>4 boşluk içeride</b> yazılır. C++'taki <code>{ }</code> yerine girinti kullanılır.</li>" +
         "<li><b>Yorumlar <code>#</code> ile başlar.</b> Python o satırları okumaz. Kendine ve arkadaşlarına not bırakmak içindir.</li>" +
       "</ol>" },
+    { type: "scene", scene: "girinti", title: "Girinti neyi değiştirir?", html: "<p>Satırları <b>→</b> ile içeri it, <b>←</b> ile dışarı al. Çıktının nasıl değiştiğine bak.</p>" },
     { type: "quiz", q: "Bu kod çalışınca ne olur?", code: "Print(\"Merhaba\")", options: ["Ekrana Merhaba yazar", "Ekrana Print yazar", "Hata verir", "Hiçbir şey olmaz"], answer: 2,
       why: "Python büyük-küçük harfe dikkat eder. <code>Print</code> diye bir komut yok, doğrusu <code>print</code>. Python <code>NameError</code> hatası verir." },
     { type: "predict", title: "Tırnaklı ad, tırnaksız ad", html: "<p>Kural 3'ü hatırla. Ekrana ne yazar?</p>",
@@ -176,6 +183,7 @@ export var LESSONS = [
         "<div><h4>Nesne (object)</h4><p>Kalıptan çıkan <b>gerçek şey</b>. Her kurabiye ayrı bir nesne. Aynı kalıptan istediğin kadar çıkarabilirsin.</p></div>" +
       "</div>" +
       "<p>Nesnenin bildiği şeylere <b>özellik</b> (<i>attribute</i>), yapabildiği şeylere <b>metot</b> (<i>method</i>) denir.</p>" },
+    { type: "scene", scene: "fabrika", title: "Robot fabrikası", html: "<p>Kesik çizgili kutu <b>sınıf</b>: bir kalıp. Banttaki robotlar o kalıptan çıkan <b>nesneler</b>. Robot üret, birini seçip ilerlet.</p>" },
     { type: "quiz", q: "Kurabiye kalıbı ve kurabiyeler örneğinde \"sınıf\" hangisidir?", options: ["Kurabiye kalıbı", "Her bir kurabiye", "Fırın", "Un"], answer: 0,
       why: "Sınıf kalıptır, nesneler o kalıptan çıkan kurabiyelerdir. Bir sınıftan çok sayıda nesne üretilebilir." },
     { type: "read", title: "Aslında hep nesne kullandın!", html:
@@ -188,6 +196,8 @@ export var LESSONS = [
       why: "<code>upper()</code> büyük harfli <b>yeni bir yazı</b> üretir, ama <code>kelime</code> kutusundaki asıl yazı değişmez. Son satır hâlâ küçük harfle <b>robot</b> yazar." },
     { type: "quiz", q: "Arduino'daki <code>motor.write(90)</code> satırında metot hangisi?", options: ["motor", "write", "90", "Servo"], answer: 1,
       why: "<code>motor</code> nesne, noktadan sonra gelen <code>write</code> onun metodu, <code>90</code> ise metoda verdiğimiz bilgi (açı)." },
+    { type: "trace", title: "Nesneler kodda nasıl yaşar?", html: "<p>İki robot üretip birini ilerleten kodu adım adım izle. <b>__init__</b> çalışırken <b>self</b> kutusunun nasıl dolduğuna ve <b>ilerle</b>'nin sadece bir robotun pilini değiştirdiğine dikkat et.</p>",
+      code: "class Robot:\n    def __init__(self, ad):\n        self.ad = ad\n        self.pil = 100\n\n    def ilerle(self, adim):\n        self.pil = self.pil - adim * 10\n\n\nr1 = Robot(\"Şimşek\")\nr2 = Robot(\"Volt\")\nr1.ilerle(3)\nprint(r1.ad, r1.pil)\nprint(r2.ad, r2.pil)" },
     { type: "code", title: "Robot fabrikası", html:
       "<p>Aşağıda bir <code>Robot</code> <b>sınıfı</b> var. <code>__init__</code> robot üretilirken çalışır ve özelliklerini ayarlar. <code>self</code> \"bu robotun kendisi\" demek.</p>" +
       "<p>Fabrikada bir robot zaten üretilmiş. <b>Volt</b> adında ikinci bir robot üret ve <b>2 adım</b> ilerlet.</p>",
@@ -217,6 +227,7 @@ export var LESSONS = [
       "<p><b>Google Colab</b>, internet tarayıcısında çalışan ücretsiz bir Python defteridir. Bilgisayara hiçbir şey kurman gerekmez. Kodunu Google'ın güçlü bilgisayarları çalıştırır. Yapay zekâ için de bu yüzden çok kullanılır.</p>" +
       "<p>Bir Colab defteri iki tür <b>hücreden</b> oluşur:</p>" +
       "<div class=\"cmp-grid two\"><div><h4>Metin hücresi</h4><p>Açıklamalar, başlıklar, resimler. Okumak için.</p></div><div><h4>Kod hücresi</h4><p>Gri kutular. İçindeki kodu <b>Shift + Enter</b> ile ya da soldaki ▶ düğmesiyle çalıştırırsın.</p></div></div>" },
+    { type: "scene", scene: "hucre", title: "Hücreler hafızayı paylaşır", html: "<p>Bu küçük bir Colab taklidi. Hücreleri farklı sıralarla çalıştır, hafızada neler olduğuna bak. Sonra <b>yeniden başlat</b>'ı dene.</p>" },
     { type: "read", title: "Üç önemli ipucu", html:
       "<ol class=\"rules-list\">" +
         "<li><b>Önce kopyala.</b> Defter açılınca <b>Dosya → Drive'a kopya kaydet</b> seçeneğine tıkla. Böylece yaptığın değişiklikler kendi Drive'ında saklanır. (Bir Google hesabı gerekir.)</li>" +

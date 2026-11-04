@@ -24,6 +24,7 @@ LESSONS.forEach((L, li) => L.steps.forEach((s, si) => {
   if (s.type === "parsons") {
     const a = Atolye.checkParsons(s, s.solution + "\n"); if (!a.ok) fail(id, "yapboz çözümü geçmiyor", a.error || a.out);
   }
+  if (s.type === "trace") { const r = Atolye.trace(s.code); if (r.error || !r.steps.length) fail(id, "izleme kodu hata veriyor", r.error && r.error.msg); if (verbose) console.log(id, "trace adım", r.steps.length, JSON.stringify(r.end.out)); }
   if (s.type === "quiz" && s.code) { const r = Atolye.runSnippet(s.code); if (verbose) console.log(id, "quiz", JSON.stringify(r.out), r.error && r.error.raw); }
   if (s.colab && !NOTEBOOKS[s.colab]) fail(id, "colab");
 }));

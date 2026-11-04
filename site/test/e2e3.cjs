@@ -25,7 +25,7 @@ const log=(...a)=>console.log(...a);
  await p.waitForTimeout(200); await p.screenshot({path:OUT+'/t2.png', fullPage:true});
  log('ön test sonuç:', (await txt(p,'.summary .big')));
  // ders 1
- await go(p,'ders-1'); await p.click('#lNext'); // read
+ await go(p,'ders-1'); await p.click('#lNext'); await p.click('#lNext'); // read, sahne
  await p.click('.opt[data-o="2"]'); await p.click('#lNext'); await p.click('#lNext'); // quiz, read
  log('adım:', await txt(p,'.lnav-info'));
  await p.click('#pCheck'); log('boş tahmin:', await txt(p,'#pRes'));
@@ -50,7 +50,7 @@ const log=(...a)=>console.log(...a);
  log('bonus adım:', await txt(p,'.lnav-info'), await txt(p,'#lNext'));
  // öğretmen modu ile diğer derslere
  await p.keyboard.press('Control+Shift+S'); await p.waitForTimeout(200);
- await go(p,'ders-6'); for(let i=0;i<4;i++){ await p.click('#lNext'); await p.waitForTimeout(60);} 
+ await go(p,'ders-6'); for(let i=0;i<5;i++){ await p.click('#lNext'); await p.waitForTimeout(60);} 
  log('ders6 adım', await txt(p,'.lnav-info'));
  // yapboz: doğru sırayla tıkla
  const order=['isim = "Mert"','puan = 85','puan = puan + 5','mesaj = f"Merhaba {isim}, puanın {puan}"','print(mesaj)'];
@@ -100,7 +100,7 @@ const log=(...a)=>console.log(...a);
  await m.evaluate(()=>{ localStorage.setItem('python-atolyesi-v1', JSON.stringify({done:{},code:{},quiz:{},tests:{},teacher:true})); });
  const over=async(h)=>{ await go(m,h); await m.waitForTimeout(300); return m.evaluate(()=>document.documentElement.scrollWidth); };
  await m.reload(); 
- for (const h of ['asama-1','ders-6','yapboz-7','model-3','on-test','kontrol-2','sonuc','asama-4']) { const w=await over(h); if (h==='ders-6'){ for(let i=0;i<4;i++){await m.click('#lNext');} } log('mobil',h,w); }
+ for (const h of ['asama-1','ders-6','yapboz-7','model-3','on-test','kontrol-2','sonuc','asama-4']) { const w=await over(h); if (h==='ders-6'){ for(let i=0;i<5;i++){await m.click('#lNext');} } log('mobil',h,w); }
  await go(m,'yapboz-7'); for (const o of ['for satir in range(3):','sira = ""']){ const blks=await m.$$('.pz-blk'); for(const bl of blks){ if((await bl.innerText()).trim()===o){ await bl.click(); break; } } } await m.waitForTimeout(100);
  await m.screenshot({path:OUT+'/m_yapboz.png', fullPage:true}); log('mobil yapboz genişlik', await m.evaluate(()=>document.documentElement.scrollWidth));
  await go(m,'model-3'); await m.evaluate(c=>document.querySelector('.CodeMirror').CodeMirror.setValue(c), M.tasks[2].solution); await m.click('#runBtn'); await m.waitForTimeout(1200);

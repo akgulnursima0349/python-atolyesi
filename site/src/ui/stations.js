@@ -3,6 +3,10 @@ import { TR_ALFABE, ML_INTENTS, MEYVELER, TEST_MEYVELERI, jsKnn } from "../data/
 import { Atolye } from "../engine/atolye.js";
 import { $, $$, esc, icon, save, persist, S, taskCount, reqCount, doneCount, isBonus, unlocked, setHue, HUES, PHASES, shell, setupEditor, getCode, setCode, markErr, clearErr, errorHtml, pythonReady, confetti } from "./core.js";
 import { hintLadder, whereHint, mountParsons } from "./widgets.js";
+import { openTracer } from "./tracer.js";
+import { mountScene } from "./scenes.js";
+let dlOpen = false;
+import { TR_ALFABE as ALF, MEYVELER as MV0, TEST_MEYVELERI as TM0 } from "../data/stations.js";
 import { bindShell } from "./pages.js";
 
 const root = () => $("#root");
@@ -57,7 +61,7 @@ function showTask(st, idx) {
         <div class="goal">${icon("target")}<span>${st.kind === "fix" ? "Programı düzelt: çıktısı <b>beklenen çıktı</b> ile aynı olsun." : T.goal}</span></div>
         ${rules.length ? `<div class="rules">${rules.map((x) => `<span>${x}</span>`).join("")}</div>` : ""}</article>
       <div class="editor-wrap"><div class="editor"><div class="editor-top"><span class="file">${FILES[st.kind]}</span><span id="lineInfo"></span></div><div id="cmHost"></div></div>
-        <div class="editor-bar"><button class="btn btn--hue" id="runBtn">${icon("play")} Çalıştır</button><button class="btn" id="hintBtn">${icon("bulb")} İpucu</button>
+        <div class="editor-bar"><button class="btn btn--hue" id="runBtn">${icon("play")} Çalıştır</button><button class="btn" id="traceBtn" title="Kodunu satır satır izle">${icon("eye")} Adım adım</button><button class="btn" id="hintBtn">${icon("bulb")} İpucu</button>
         <button class="btn btn--quiet" id="resetBtn">${icon("reset")} Baştan al</button>${save.teacher && T.solution ? `<button class="btn btn--quiet" id="solBtn">${icon("eye")} Çözüm</button>` : ""}<span class="sp"></span><span class="kbd">Ctrl + Enter</span></div></div>
       <div id="feedback"></div><div class="stack" id="hints"></div>
     </div><div class="stack" id="screen"></div></div>`;
@@ -65,12 +69,23 @@ function showTask(st, idx) {
   bindShell(); bindSteps(st);
   setupEditor($("#cmHost"), code, () => { save.code[key] = getCode(); persist(); lineInfo(); }, run);
   $("#runBtn").onclick = run;
+  $("#traceBtn").onclick = () => traceTask(st, T, getCode());
   ladder = hintLadder({ btn: $("#hintBtn"), list: $("#hints"), hints: T.hints, solution: T.solution, extra: st.kind === "fix" ? () => whereHint(T.code, T.solution) : null });
   $("#resetBtn").onclick = () => { setCode(starter); $("#feedback").innerHTML = ""; renderScreen(null); };
   if ($("#solBtn")) $("#solBtn").onclick = () => setCode(T.solution);
   renderScreen(null); lineInfo();
 }
 function lineInfo() { const n = Atolye.countLines(getCode()), lim = (T.rules || {}).maxLines; $("#lineInfo").textContent = n + " satır" + (lim ? " / en fazla " + lim : ""); }
+/* Görevin kendi hazır değişkenleri ve komutlarıyla adım adım izle */
+function traceTask(st, t, code) {
+  const none = () => window.Sk.builtin.none.none$;
+  let b = {}, extra = "", note = "";
+  if (st.kind === "cipher") b = { mesaj: Atolye.cipherText(t), alfabe: ALF };
+  if (st.kind === "pixel") { b = { piksel: none, ciz: none, temizle: none }; note = "İzleyicide resim çizilmez; döngüdeki <b>x</b> ve <b>y</b> kutularının nasıl değiştiğine bak."; }
+  if (st.kind === "model") b = { meyveler: JSON.parse(JSON.stringify(MV0)), test_meyveleri: JSON.parse(JSON.stringify(TM0)) };
+  if (st.kind === "bot" && !/cevap\(/.test(code.replace(/def\s+cevap/, ""))) { extra = '\n# İzlemek için bota örnek bir mesaj gönderiyoruz:\nprint(cevap("Merhaba bot, nasılsın?"))\n'; note = "Botu izleyebilmek için kodun sonuna örnek bir mesaj ekledik."; }
+  openTracer({ code: code.replace(/\s+$/, "") + "\n" + extra, builtins: b, title: t.title, note });
+}
 function kicker(st, idx) {
   const t = st.tasks[idx];
   return t.bonus ? `<span class="k k--bonus">${icon("star")} Yıldızlı görev · isteğe bağlı <code>${esc(t.tag.replace(/^★\s*/, ""))}</code></span>` : `<span class="k">Görev ${idx + 1} <code>${esc(t.tag)}</code></span>`;
@@ -142,6 +157,7 @@ function screenCipher(box, res) {
     <div class="cipher">${T.funcs ? "<em>Bu dosyada mesaj yok: ajans fonksiyonlarını gizli test mesajlarıyla deneyecek.</em>" : `<em>mesaj = </em>"${esc(ctext)}"`}</div>
     ${T.alfabe ? `<div class="cipher" style="font-size:14px"><em>alfabe = </em>"${TR_ALFABE}"</div>` : ""}
     <div class="decoder" id="decoder"><span class="dim">Çözücü ekranı · <code>print()</code> ile yazdırdığın şey burada görünür.</span></div></section>`;
+  if (/^\[/.test(T.tag)) h += `<details class="sheet station-scene" id="dlBox"${dlOpen ? " open" : ""}><summary>${icon("eye")} Dilimlemeyi görselleştir: <code>kelime[başla:bitiş:adım]</code></summary><div id="dlHost"></div></details>`;
   if (T.funcs && res && res.funcRows) {
     h += `<section class="sheet"><div class="label"><span>Ajansın gizli testleri</span></div><div class="tbl"><table class="t"><thead><tr><th>metin</th><th>kaydır</th><th>sifrele()</th><th>coz()</th><th></th></tr></thead><tbody>${res.funcRows.map((r) => {
       const ok = r.okS && r.okC;
@@ -149,6 +165,8 @@ function screenCipher(box, res) {
     }).join("")}</tbody></table></div></section>`;
   }
   box.innerHTML = h;
+  const dl = $("#dlBox");
+  if (dl) { const m = () => { if (dl.open && !$("#dlHost").children.length) mountScene($("#dlHost"), "dilim"); dlOpen = dl.open; }; dl.addEventListener("toggle", m); m(); }
   if (res && res.out && res.out.length) {
     const text = res.out.join("\n"), d = $("#decoder"); let i = 0;
     d.innerHTML = '<span id="typed"></span><span class="cursor"></span>';
@@ -262,7 +280,7 @@ function showParsons(st, idx) {
       <article class="sheet">${kicker(st, idx)}<h2>${T.title}</h2><div class="prose" style="margin-top:8px"><p>${T.story}</p></div>
         <div class="goal">${icon("target")}<span>${T.goal}</span></div>${T.extra ? `<div class="rules"><span>${T.extra.length} şaşırtmaca parça var</span></div>` : ""}</article>
       <div id="pzHost"></div>
-      <div class="pz-bar"><button class="btn btn--hue" id="runBtn">${icon("play")} Çalıştır</button><button class="btn" id="hintBtn">${icon("bulb")} İpucu</button><button class="btn btn--quiet" id="resetBtn">${icon("reset")} Baştan al</button></div>
+      <div class="pz-bar"><button class="btn btn--hue" id="runBtn">${icon("play")} Çalıştır</button><button class="btn" id="traceBtn">${icon("eye")} Adım adım</button><button class="btn" id="hintBtn">${icon("bulb")} İpucu</button><button class="btn btn--quiet" id="resetBtn">${icon("reset")} Baştan al</button></div>
       <div class="split"><div class="stack"><div id="feedback"></div><div class="stack" id="hints"></div></div>
         <section class="sheet"><div class="label"><span>Beklenen çıktı</span></div><div class="term">${T.expect.map((l, i) => `<div class="l"><i>${i + 1}</i><span>${esc(l)}</span></div>`).join("")}</div>
         <div class="label" style="margin-top:16px"><span>Programının çıktısı</span></div><div class="term" id="pzOut"><span class="note">Çalıştır'a basınca burada görünecek.</span></div></section></div></div>`;
@@ -271,6 +289,7 @@ function showParsons(st, idx) {
   PZ = mountParsons($("#pzHost"), T, save.code[key], (state) => { save.code[key] = state; persist(); });
   ladder = hintLadder({ btn: $("#hintBtn"), list: $("#hints"), hints: T.hints, solution: T.solution });
   $("#resetBtn").onclick = () => { PZ.reset(); $("#feedback").innerHTML = ""; };
+  $("#traceBtn").onclick = () => { if (PZ.code().trim()) openTracer({ code: PZ.code(), title: T.title }); };
   $("#runBtn").onclick = () => {
     if (!pythonReady()) return;
     const res = Atolye.check(st, T, PZ.code()), out = res.out.slice(), fb = $("#feedback");
@@ -407,7 +426,8 @@ function showQuiz(st, r) {
     const res = Atolye.runSnippet(c.code), outTxt = res.error ? res.error.raw || res.error.msg : res.out.join("\n");
     $("#reveal").innerHTML = `<div class="label"><span>Python'un gerçek çıktısı</span></div><div class="term">${esc(outTxt)}</div>
       <div class="fb ${ok ? "fb--ok" : "fb--bad"}"><h3>${ok ? icon("check") + "Doğru" : icon("x") + "Bu sefer olmadı"}</h3><p>${c.why}</p></div>`;
-    $("#afterOpts").innerHTML = `<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn--hue" id="nextCard">${state.i + 1 < round.cards.length ? "Sonraki kart" : "Sonucu gör"} ${icon("right")}</button><button class="btn btn--quiet" id="playBtn">${icon("code")} Kodla oyna</button></div><div id="sandbox"></div>`;
+    $("#afterOpts").innerHTML = `<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn--hue" id="nextCard">${state.i + 1 < round.cards.length ? "Sonraki kart" : "Sonucu gör"} ${icon("right")}</button><button class="btn" id="cardTrace">${icon("eye")} Adım adım izle</button><button class="btn btn--quiet" id="playBtn">${icon("code")} Kodla oyna</button></div><div id="sandbox"></div>`;
+    $("#cardTrace").onclick = () => openTracer({ code: c.code, title: "Bu kod ekrana ne yazar?" });
     $("#nextCard").onclick = () => { state.i++; render(); };
     $("#playBtn").onclick = () => sandbox(c.code);
     $("#nextCard").focus();

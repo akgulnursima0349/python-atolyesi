@@ -4,6 +4,8 @@ import { STATIONS } from "../data/stations.js";
 import { Atolye } from "../engine/atolye.js";
 import { $, $$, esc, icon, save, persist, hooks, PHASES, phaseDone, totals, lessonOpen, doneCount, reqCount, bonusDone, isBonus, PHASE_STATIONS, testDone, hueVars, setHue, art, imageUrl, shell, setupEditor, getCode, setCode, markErr, clearErr, errorHtml, pythonReady, confetti } from "./core.js";
 import { hintLadder, mountParsons } from "./widgets.js";
+import { openTracer, mountTracer } from "./tracer.js";
+import { mountScene, SCENES } from "./scenes.js";
 import { testCard } from "./assess.js";
 import { cloud } from "../cloud/index.js";
 
@@ -190,7 +192,8 @@ export function showLesson(li) {
 }
 const reqSteps = (L) => L.steps.filter((s) => !s.bonus).length;
 const lessonDone = () => !!save.done["ders-" + LS.li];
-const stepDone = (i) => { if (i < 0) return true; const st = LESSONS[LS.li].steps[i]; return st.type === "read" || LS.ok[i] || save.teacher || lessonDone(); };
+const PASSIVE = { read: 1, trace: 1, scene: 1 };
+const stepDone = (i) => { if (i < 0) return true; const st = LESSONS[LS.li].steps[i]; return !!PASSIVE[st.type] || LS.ok[i] || save.teacher || lessonDone(); };
 const stepOpen = (i) => { const st = LESSONS[LS.li].steps[i]; if (st.bonus) return lessonDone() || save.teacher; return i <= LS.si || stepDone(i - 1); };
 
 function renderStep() {
@@ -209,6 +212,10 @@ function renderStep() {
     h += `<article class="sheet">${kicker(icon("target") + " Alıştırma")}<div class="prose"><h2>${step.title}</h2>${step.html}</div>
       <div class="sort-list" style="margin-top:16px">${step.items.map((it, k) => `<div class="sort-row" data-row="${k}"><code>${esc(it[0])}</code><span class="sort-btns">${step.cats.map((c, ci) => `<button class="btn btn--sm" data-c="${ci}">${c}</button>`).join("")}</span></div>`).join("")}</div>
       <div id="qfb" style="margin-top:16px"></div></article>`;
+  } else if (step.type === "trace") {
+    h += `<article class="sheet">${kicker(icon("eye") + " Adım adım izle")}<div class="prose"><h2>${step.title}</h2>${step.html || ""}</div><div id="trHost" style="margin-top:16px"></div></article>`;
+  } else if (step.type === "scene") {
+    h += `<article class="sheet">${kicker(icon("play") + " Canlı anlatım")}<div class="prose"><h2>${step.title}</h2>${step.html || ""}</div><div id="scHost" style="margin-top:16px"></div></article>`;
   } else if (step.type === "predict") {
     const n = step.code.split("\n").filter((l) => /print\(/.test(l)).length;
     h += `<div class="split"><article class="sheet">${kicker(icon("eye") + " Önce tahmin et")}<div class="prose"><h2>${step.title}</h2>${step.html}</div><pre class="code-show">${esc(step.code)}</pre></article>
@@ -218,12 +225,12 @@ function renderStep() {
   } else if (step.type === "parsons") {
     h += `<article class="sheet">${kicker(icon("puzzle") + " Kod yapbozu")}<div class="prose"><h2>${step.title}</h2>${step.html}</div></article>
       <div id="pzHost"></div>
-      <div class="pz-bar"><button class="btn btn--primary" id="lRun">${icon("play")} Çalıştır</button><button class="btn" id="lHint">${icon("bulb")} İpucu</button><button class="btn btn--quiet" id="lReset">${icon("reset")} Baştan al</button></div>
+      <div class="pz-bar"><button class="btn btn--primary" id="lRun">${icon("play")} Çalıştır</button><button class="btn" id="lTrace">${icon("eye")} Adım adım</button><button class="btn" id="lHint">${icon("bulb")} İpucu</button><button class="btn btn--quiet" id="lReset">${icon("reset")} Baştan al</button></div>
       <div class="split"><div class="stack"><div id="lHints" class="stack"></div><div id="qfb"></div></div><section class="sheet"><div class="label"><span>Çıktı</span></div><div class="term" id="lOut"><span class="note">Çalıştır'a basınca programın çıktısı burada görünecek.</span></div></section></div>`;
   } else {
     h += `<div class="split"><div class="stack"><article class="sheet">${kicker(icon("code") + " Alıştırma")}<div class="prose"><h2>${step.title}</h2>${step.html}</div></article>
       <div class="editor-wrap"><div class="editor"><div class="editor-top"><span class="file">alistirma.py</span><span>Ctrl + Enter ile çalıştır</span></div><div id="cmHost"></div></div>
-      <div class="editor-bar"><button class="btn btn--primary" id="lRun">${icon("play")} Çalıştır</button><button class="btn" id="lHint">${icon("bulb")} İpucu</button><button class="btn btn--quiet" id="lReset">${icon("reset")} Baştan al</button>${save.teacher ? `<button class="btn btn--quiet" id="lSol">${icon("eye")} Çözüm</button>` : ""}</div></div>
+      <div class="editor-bar"><button class="btn btn--primary" id="lRun">${icon("play")} Çalıştır</button><button class="btn" id="lTrace" title="Kodunu satır satır izle">${icon("eye")} Adım adım</button><button class="btn" id="lHint">${icon("bulb")} İpucu</button><button class="btn btn--quiet" id="lReset">${icon("reset")} Baştan al</button>${save.teacher ? `<button class="btn btn--quiet" id="lSol">${icon("eye")} Çözüm</button>` : ""}</div></div>
       <div id="lHints" class="stack"></div></div>
       <div class="stack"><section class="sheet"><div class="label"><span>Çıktı</span></div><div class="term" id="lOut"><span class="note">Çalıştır'a basınca programının çıktısı burada görünecek.</span></div></section><div id="qfb"></div></div></div>`;
   }
@@ -250,6 +257,8 @@ function renderStep() {
   if (step.type === "code") bindCode(step);
   if (step.type === "predict") bindPredict(step);
   if (step.type === "parsons") bindParsons(step);
+  if (step.type === "trace") mountTracer($("#trHost"), { code: step.code });
+  if (step.type === "scene") mountScene($("#scHost"), step.scene);
 }
 function unlockNext() {
   LS.ok[LS.si] = true;
@@ -306,6 +315,7 @@ function bindCode(step) {
   };
   setupEditor($("#cmHost"), save.code[key] != null ? save.code[key] : step.starter, () => { save.code[key] = getCode(); persist(); }, run);
   $("#lRun").onclick = run;
+  $("#lTrace").onclick = () => openTracer({ code: getCode(), title: step.title });
   $("#lReset").onclick = () => setCode(step.starter);
   if ($("#lSol")) $("#lSol").onclick = () => setCode(step.solution);
 }
@@ -322,7 +332,8 @@ function bindPredict(step) {
     const rows = Array.from({ length: n }, (_, i) => { const g = guess[i] == null ? "" : guess[i], t = real[i] == null ? "" : real[i], ok = norm(g) === norm(t) && t !== ""; if (ok) hit++; return `<tr class="${ok ? "okr" : "badr"}"><td>${i + 1}</td><td>${esc(g) || '<span class="muted">—</span>'}</td><td>${esc(t) || '<span class="muted">—</span>'}</td><td>${ok ? "✓" : "✗"}</td></tr>`; }).join("");
     const all = hit === real.length && guess.filter((g) => g.trim()).length === real.length;
     $("#pRes").innerHTML = `<div class="tbl" style="margin-top:16px"><table class="t t--guess"><thead><tr><th></th><th>Tahminin</th><th>Python'un çıktısı</th><th></th></tr></thead><tbody>${rows}</tbody></table></div>
-      <div class="fb ${all ? "fb--ok" : "fb--info"}" style="margin-top:12px"><h3>${all ? icon("check") + "Tam isabet" : `${hit} / ${real.length} satırı bildin`}</h3><p>${step.why}</p></div>`;
+      <div class="fb ${all ? "fb--ok" : "fb--info"}" style="margin-top:12px"><h3>${all ? icon("check") + "Tam isabet" : `${hit} / ${real.length} satırı bildin`}</h3><p>${step.why}</p><div class="row"><button class="btn btn--sm" id="pTrace">${icon("eye")} Nasıl çıktığını adım adım izle</button></div></div>`;
+    $("#pTrace").onclick = () => openTracer({ code: step.code, title: step.title });
     ta.readOnly = true; $("#pCheck").disabled = true;
     unlockNext();
   };
@@ -332,6 +343,7 @@ function bindParsons(step) {
   const ladder = hintLadder({ btn: $("#lHint"), list: $("#lHints"), hints: step.hints, solution: null });
   const pz = mountParsons($("#pzHost"), step, save.code[key], (state) => { save.code[key] = state; persist(); });
   $("#lReset").onclick = () => pz.reset();
+  $("#lTrace").onclick = () => { if (pz.code().trim()) openTracer({ code: pz.code(), title: step.title }); };
   $("#lRun").onclick = () => {
     const r = Atolye.checkParsons(step, pz.code()), out = $("#lOut");
     out.innerHTML = r.out.length ? esc(r.out.join("\n")) : `<span class="note">${r.error ? "Program hata verdiği için bir şey yazamadı." : "(çıktı yok)"}</span>`;

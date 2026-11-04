@@ -91,6 +91,37 @@ export var Atolye = (function () {
 
   function lineOf(s) { var c = s, ln = 0; while (c) { if (c.$lineno != null) ln = c.$lineno; c = c.child; } return ln; }
 
+  /* Bir Python değerini ekranda gösterilecek sade bir nesneye çevirir */
+  function view(v, depth) {
+    var Sk = G.Sk, tn = "";
+    try { tn = v.tp$name || (v.ob$type && v.ob$type.tp$name) || ""; } catch (_) {}
+    try {
+      if (v === Sk.builtin.none.none$) return { t: "none", r: "None" };
+      if (v instanceof Sk.builtin.bool) return { t: "bool", r: v.v ? "True" : "False" };
+      if (v instanceof Sk.builtin.int_ || v instanceof Sk.builtin.lng) return { t: "int", r: Sk.misceval.objectRepr(v) };
+      if (v instanceof Sk.builtin.float_) return { t: "float", r: Sk.misceval.objectRepr(v) };
+      if (v instanceof Sk.builtin.str) return { t: "str", r: Sk.misceval.objectRepr(v) };
+      if (v instanceof Sk.builtin.list || v instanceof Sk.builtin.tuple) {
+        var arr = v.v, items = depth > 1 ? [] : arr.slice(0, 16).map(function (x) { return view(x, depth + 1); });
+        return { t: v instanceof Sk.builtin.list ? "list" : "tuple", items: items, n: arr.length };
+      }
+      if (v instanceof Sk.builtin.dict) {
+        var ent = [];
+        if (depth <= 1) { var it = Sk.abstr.iter(v), k; while ((k = it.tp$iternext()) !== undefined && ent.length < 12) ent.push([view(k, depth + 1), view(v.mp$subscript(k), depth + 1)]); }
+        return { t: "dict", entries: ent, n: v.sq$length ? v.sq$length() : ent.length };
+      }
+      if (v instanceof Sk.builtin.func) return { t: "func", r: "fonksiyon " + (v.func_code && v.func_code.co_name ? Sk.ffi.remapToJs(v.func_code.co_name) : "") };
+      if (v instanceof Sk.builtin.type) return { t: "class", r: "sınıf " + (v.prototype && v.prototype.tp$name || "") };
+      if (v instanceof Sk.builtin.module) return { t: "module", r: "modül" };
+      if (v.$d && v.$d instanceof Sk.builtin.dict) {
+        var at = [];
+        if (depth <= 1) { var it2 = Sk.abstr.iter(v.$d), k2; while ((k2 = it2.tp$iternext()) !== undefined && at.length < 10) at.push([Sk.ffi.remapToJs(k2), view(v.$d.mp$subscript(k2), depth + 1)]); }
+        return { t: "obj", cls: tn, attrs: at };
+      }
+      return { t: "other", r: Sk.misceval.objectRepr(v) };
+    } catch (e) { return { t: "other", r: "?" }; }
+  }
+
   /* ---------- çalıştırıcı: Skulpt'u eşzamanlı sürer, satır sayar ---------- */
   function Runner(builtins, globalsIn) {
     var Sk = G.Sk, st = { line: 0, steps: 0 }, out = [], buf = "";
@@ -145,6 +176,48 @@ export var Atolye = (function () {
           flush(true);
           return { value: Sk.ffi.remapToJs(res), isNone: res === Sk.builtin.none.none$, printed: out.slice(o0) };
         } catch (e) { flush(true); return { error: translate(e, st.line, "") }; }
+      },
+      /* Adım adım izleme: her satırdan önce değişkenlerin ve çıktının kopyasını alır.
+         Dönen adım: { line, frames: [{ fn, vars: { ad: görünüm } }], out: [...] } */
+      trace: function (code, maxSteps) {
+        maxSteps = maxSteps || 400;
+        setup();
+        var steps = [], error = null, mod = null, truncated = false;
+        var bad = stripCode(code).split("\n").map(function (l, i) { var m = l.match(/[A-Za-z_çğıöşüÇĞİÖŞÜ]*[çğıöşüÇĞİÖŞÜ][\wçğıöşüÇĞİÖŞÜ]*/); return m ? { i: i, w: m[0] } : null; }).filter(Boolean)[0];
+        if (bad) return { steps: [], error: { type: "Atölye", raw: "", line: bad.i + 1, msg: "<code>" + esc(bad.w) + "</code> adında Türkçe harf var. Değişken adlarında ç, ğ, ı, ö, ş, ü kullanmıyoruz." } };
+        function snap(r) {
+          var frames = [], c = r, line = 0;
+          while (c) {
+            if (c.$filename === "<atolye>.py" && c.$lineno != null) {
+              line = c.$lineno;
+              var src = c.$loc && Object.keys(c.$loc).length ? c.$loc : null, vars = {};
+              if (src) Object.keys(src).forEach(function (k) { if (!/^__/.test(k) && k.charAt(0) !== "$") vars[k] = view(src[k], 0); });
+              if (c.$tmps && (!src || frames.length)) Object.keys(c.$tmps).forEach(function (k) { var v = c.$tmps[k]; if (v !== undefined && /^[A-Za-z_]\w*$/.test(k) && !/^__/.test(k)) vars[k] = view(v, 0); });
+              frames.push({ line: c.$lineno, vars: vars, global: frames.length === 0 });
+            }
+            c = c.child;
+          }
+          flush(false);
+          return { line: line, frames: frames, out: out.concat(buf ? [buf] : []) };
+        }
+        try {
+          var r = Sk.importMainWithBody("<atolye>", false, code, true), n = 0;
+          while (r instanceof Sk.misceval.Suspension) {
+            if (r.data && r.data.type === "Sk.debug") {
+              st.line = lineOf(r);
+              if (++n > LINE_LIMIT) throw robiErr("Program durmadan çalıştı ve durduruldu. Hiç bitmeyen bir döngü olabilir mi?");
+              if (steps.length < maxSteps) { var sn = snap(r); if (sn.frames.length) steps.push(sn); } else truncated = true;
+              if (truncated && n > maxSteps * 4) break;
+            }
+            r = r.resume();
+          }
+          mod = r;
+        } catch (e) { error = translate(e, st.line, code); }
+        flush(true);
+        var end = { line: 0, frames: [], out: out.slice(), end: true };
+        if (mod && mod.$d) { var gv = {}; Object.keys(mod.$d).forEach(function (k) { if (!/^__/.test(k) && k.charAt(0) !== "$") gv[k] = view(mod.$d[k], 0); }); end.frames = [{ line: 0, vars: gv, global: true }]; }
+        else if (steps.length) end.frames = steps[steps.length - 1].frames;
+        return { steps: steps, end: end, error: error, truncated: truncated, out: out };
       },
       getVar: function (mod, name) { var v = mod && mod.$d[name]; if (v === undefined) v = G.Sk.builtins[name]; return v === undefined ? undefined : G.Sk.ffi.remapToJs(v); },
       out: out
@@ -450,6 +523,6 @@ export var Atolye = (function () {
   }
   function runSnippet(code) { var R = Runner({}); return R.run(code); }
 
-  return { check: check, checkLesson: checkLesson, checkParsons: checkParsons, modelPredict: modelPredict, modelRunner: modelRunner, runSnippet: runSnippet, compileBot: compileBot, askBot: askBot, mlBot: mlBot, mlTeach: mlTeach, targetGrid: targetGrid,
+  return { trace: function (code, builtins, maxSteps) { return Runner(builtins || {}).trace(code, maxSteps); }, check: check, checkLesson: checkLesson, checkParsons: checkParsons, modelPredict: modelPredict, modelRunner: modelRunner, runSnippet: runSnippet, compileBot: compileBot, askBot: askBot, mlBot: mlBot, mlTeach: mlTeach, targetGrid: targetGrid,
     cipherText: cipherText, countLines: countLines, COLORS: COLORS, LETTERS: LETTERS, esc: esc };
 })();
