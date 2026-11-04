@@ -65,13 +65,13 @@ export function showLogin(view) {
   }
   if ($("#fTeacher")) {
     $("#toSignup").onclick = (e) => { e.preventDefault(); showLogin("kayit"); };
-    $("#fTeacher").onsubmit = (e) => { e.preventDefault(); run(e.target, async () => { const me = await teacherLogin($("#tMail").value.trim(), $("#tPass").value); if (me.rol === "ogretmen") location.hash = "ogretmen"; else if (me.pasif) { await logout(true); msg("Bu öğretmen hesabının erişimi kurum müdürü tarafından kapatılmış."); } else showLogin("tamamla"); }); };
+    $("#fTeacher").onsubmit = (e) => { e.preventDefault(); run(e.target, async () => { const me = await teacherLogin($("#tMail").value.trim(), $("#tPass").value); if (me.rol === "ogretmen") location.hash = "ogretmen"; else if (me.pasif) { await logout(true); msg("Bu hesabın erişimi kurum yöneticisi tarafından kapatılmıştır."); } else showLogin("tamamla"); }); };
   }
   if ($("#fSignup")) {
     $("#toLogin").onclick = (e) => { e.preventDefault(); showLogin("ogretmen"); };
     $("#fSignup").onsubmit = (e) => { e.preventDefault(); run(e.target, async () => {
       const r = await teacherSignup($("#sMail").value.trim(), $("#sPass").value);
-      if (r.needsConfirm) msg("Hesabın oluşturuldu. E-postana gelen <b>onay bağlantısına</b> tıkla, sonra buradan <b>Öğretmen girişi</b> yap.", true);
+      if (r.needsConfirm) msg("Hesabınız oluşturuldu. E-posta adresinize gönderilen <b>doğrulama bağlantısına</b> tıkladıktan sonra <b>Öğretmen girişi</b> ile giriş yapabilirsiniz.", true);
       else showLogin("tamamla");
     }); };
   }
@@ -263,7 +263,7 @@ function studentsTab(rows) {
       <p class="muted small">PIN'ler sadece bu sınıfın öğretmenlerine ve müdüre görünür. Tahtaya yansıtırken gizli tut.</p>
       <div class="row"><button class="btn" id="togglePins">${icon(show ? "eyeOff" : "eye")} ${show ? "PIN'leri gizle" : "PIN'leri göster"}</button><button class="btn btn--primary" id="printPins">Kartları yazdır</button><button class="btn" id="copyPins">Listeyi kopyala</button></div><div id="copyMsg"></div>
       <div class="pin-cards" id="pinCards"${show ? "" : " hidden"}>${withPin.map((p) => `<div class="pin-card"><small>Python Atölyesi · ${esc(CL.cls.ad)}</small><span>Sınıf kodu <b>${esc(CL.cls.kod)}</b></span><span>Takma ad <b>${esc(p.takma_ad)}</b></span><span>PIN <b>${esc(p.pin)}</b></span></div>`).join("")}</div></section>` : "";
-  const old = noPin.length ? `<section class="sheet"><div class="fb fb--warn"><p><b>${noPin.length} öğrencinin PIN'i görünmüyor.</b> Bu öğrenciler PIN'ler gizli saklanırken eklenmişti; eski PIN'leri hâlâ çalışır ama okunamaz. Yeni PIN üretirsen buradan her zaman görebilirsin. (Bu öğrenciler bir sonraki girişte yeni PIN'i yazmalı.)</p>
+  const old = noPin.length ? `<section class="sheet"><div class="fb fb--warn"><p><b>${noPin.length} öğrencinin PIN'i görüntülenemiyor.</b> Bu öğrenciler önceki sürümde eklendiği için PIN'leri okunamaz biçimde saklanıyor; mevcut PIN'leri geçerlidir. Yeni PIN üretildiğinde bu ekrandan her zaman görüntülenebilir ve öğrenciler sonraki girişte yeni PIN'i kullanır.</p>
       <div class="row"><button class="btn btn--primary" id="renewMissing">Bu ${noPin.length} öğrenciye yeni PIN üret</button></div></div></section>` : "";
   return flash + old + cards + `<section class="sheet"><div class="label"><span>Öğrenci ekle</span></div>
       <form id="addStudents" class="stack"><textarea id="names" rows="5" placeholder="Her satıra bir takma ad yaz&#10;Elif K.&#10;Mert A.&#10;Kartal" aria-label="Takma adlar"></textarea>

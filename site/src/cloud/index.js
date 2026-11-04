@@ -19,29 +19,32 @@ let api = null;               // { rpc, signInAnon, signIn, signUp, signOut, ses
 let timer = null, dirty = false, saving = false, retry = 0;
 
 const MESAJ = {
-  gecersiz_giris: "Sınıf kodu, takma ad ya da PIN yanlış. Öğretmeninin verdiği kartı kontrol et.",
-  cok_deneme: "Çok fazla hatalı deneme yapıldı. 15 dakika sonra tekrar dene ya da öğretmenine sor.",
-  kurum_kodu_hatali: "Kurum kodu yanlış. Kodu kurum yöneticisinden iste.",
-  yetki_yok: "Bu işlem için yetkin yok.",
-  oturum_yok: "Oturumun kapanmış. Lütfen tekrar giriş yap.",
-  giris_gerekli: "Önce giriş yapmalısın.",
-  ogretmen_hesabi: "Bu tarayıcıda bir öğretmen hesabı açık. Önce çıkış yap.",
-  cok_fazla: "Bir seferde en fazla 60 öğrenci eklenebilir.",
-  ad_cakisiyor: "Hedef sınıfta aynı takma adla bir öğrenci var. Önce birinin takma adını değiştirmek gerekir.",
-  ogretmen_yok: "Bu öğretmen bulunamadı ya da erişimi kapalı.",
-  kendini_kapatamazsin: "Kendi hesabının erişimini kapatamazsın.",
-  ag: "Sunucuya ulaşılamadı. İnternet bağlantını kontrol et.",
-  "Invalid login credentials": "E-posta ya da şifre yanlış.",
-  "Email not confirmed": "E-posta adresin henüz onaylanmamış. Gelen kutundaki onay bağlantısına tıkla.",
-  "User already registered": "Bu e-postayla zaten bir hesap var. Giriş yapmayı dene."
+  gecersiz_giris: "Sınıf kodu, takma ad veya PIN hatalı. Lütfen bilgileri kontrol edip tekrar deneyin.",
+  cok_deneme: "Çok sayıda hatalı deneme yapıldı. Lütfen 15 dakika sonra tekrar deneyin veya öğretmeninize başvurun.",
+  kurum_kodu_hatali: "Kurum kodu geçersiz.",
+  yetki_yok: "Bu işlem için yetkiniz bulunmuyor.",
+  oturum_yok: "Oturumunuzun süresi doldu. Lütfen yeniden giriş yapın.",
+  giris_gerekli: "Bu işlem için giriş yapmanız gerekiyor.",
+  ogretmen_hesabi: "Bu tarayıcıda açık bir öğretmen oturumu var. Öğrenci girişi için önce çıkış yapın.",
+  cok_fazla: "Tek seferde en fazla 60 öğrenci eklenebilir.",
+  ad_cakisiyor: "Öğrenci taşınamadı: hedef sınıfta aynı takma ada sahip bir öğrenci var.",
+  ogretmen_yok: "Öğretmen bulunamadı veya hesabı erişime kapalı.",
+  kendini_kapatamazsin: "Kendi hesabınızın erişimini kapatamazsınız.",
+  ag: "Sunucuya bağlanılamadı. İnternet bağlantınızı kontrol edip tekrar deneyin.",
+  "Invalid login credentials": "E-posta adresi veya şifre hatalı.",
+  "Email not confirmed": "E-posta adresiniz henüz doğrulanmadı. Gelen kutunuzdaki doğrulama bağlantısını kullanın.",
+  "User already registered": "Bu e-posta adresiyle kayıtlı bir hesap zaten var."
 };
+/* Kullanıcıya sade bir mesaj gösterilir; teknik ayrıntı yalnızca tarayıcı konsoluna yazılır. */
 export function hataMetni(e) {
   const k = (e && (e.code || e.message)) || String(e);
   for (const key of Object.keys(MESAJ)) if (k.includes(key)) return MESAJ[key];
   if (/fetch|network|Failed to/i.test(k)) return MESAJ.ag;
-  if (/Password should be/i.test(k)) return "Şifre en az 6 karakter olmalı.";
-  if (/anonymous/i.test(k)) return "Öğrenci girişi için Supabase'de anonim girişin açık olması gerekiyor (kurulum rehberi, 3. adım).";
-  return "Beklenmedik bir hata oldu: " + k;
+  if (/Password should be/i.test(k)) return "Şifre en az 6 karakter olmalıdır.";
+  if (/rate limit|too many/i.test(k)) { console.warn("[atolye]", k); return "Çok sayıda istek gönderildi. Lütfen biraz bekleyip tekrar deneyin."; }
+  if (/anonymous/i.test(k)) { console.error("[atolye] Anonim giriş kapalı:", k); return "Öğrenci girişi şu anda kullanılamıyor. Lütfen daha sonra tekrar deneyin veya kurum yöneticisine bildirin."; }
+  console.error("[atolye]", e);
+  return "Beklenmeyen bir hata oluştu. Lütfen sayfayı yenileyip tekrar deneyin.";
 }
 function emit() { cloud.listeners.forEach((f) => { try { f(cloud); } catch (_) {} }); }
 export const onCloud = (f) => { cloud.listeners.add(f); return () => cloud.listeners.delete(f); };
