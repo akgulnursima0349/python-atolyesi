@@ -8,10 +8,10 @@ const fs = require("fs"), path = require("path"), os = require("os");
 const [BASE, ...DEFTERLER] = process.argv.slice(2);
 const CEVAPLAR = ["Test", "2013", "12", "30", "77", "8", ...Array.from({ length: 51 }, (_, i) => String(50 + i)), ...Array.from({ length: 49 }, (_, i) => String(1 + i))];
 
-// Yükleme testi için küçük bir PNG (beyaz zemin üzerine siyah "7" benzeri çizgi)
+// Yükleme testi için küçük bir PNG (renkli zemin üzerine koyu "7" benzeri çizgi)
 function ornekPng() {
   const zlib = require("zlib"), W = 64, H = 64, satir = [];
-  for (let y = 0; y < H; y++) { const r = [0]; for (let x = 0; x < W; x++) { const s = (y > 8 && y < 16 && x > 12 && x < 52) || (x + y > 54 && x + y < 66 && y > 14) ? 0 : 255; r.push(s, s, s); } satir.push(Buffer.from(r)); }
+  for (let y = 0; y < H; y++) { const r = [0]; for (let x = 0; x < W; x++) { const ciz = (y > 8 && y < 16 && x > 12 && x < 52) || (x + y > 54 && x + y < 66 && y > 14); r.push(ciz ? 10 : 160 + x, ciz ? 10 : 150 + y, ciz ? 10 : 255 - x - y); } satir.push(Buffer.from(r)); }
   const crc = (b) => { let c, t = []; for (let n = 0; n < 256; n++) { c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } c = 0xffffffff; for (const x of b) c = t[(c ^ x) & 255] ^ (c >>> 8); return (c ^ 0xffffffff) >>> 0; };
   const parca = (tip, veri) => { const u = Buffer.alloc(4); u.writeUInt32BE(veri.length); const tv = Buffer.concat([Buffer.from(tip), veri]); const c = Buffer.alloc(4); c.writeUInt32BE(crc(tv)); return Buffer.concat([u, tv, c]); };
   const ihdr = Buffer.alloc(13); ihdr.writeUInt32BE(W, 0); ihdr.writeUInt32BE(H, 4); ihdr[8] = 8; ihdr[9] = 2;

@@ -217,6 +217,20 @@ def pyodide(hedef, onbellek):
         shutil.copy(os.path.join(onbellek, p["file_name"]), os.path.join(hedef, p["file_name"]))
     yeni = {n: paketler[n] for n in sorted(secilen)}
 
+    # threadpoolctl, Pyodide'nin eski bir API'sini kullandığı için her sklearn eğitiminde
+    # "RuntimeWarning: JsProxy.as_object_map() is deprecated" basıyor; öğrenciye gösterilmesin.
+    tp = paketler["threadpoolctl"]
+    yol = os.path.join(hedef, tp["file_name"])
+    with zipfile.ZipFile(yol) as z:
+        icerik = {n: z.read(n) for n in z.namelist()}
+    kod = icerik["threadpoolctl.py"].decode()
+    sus = 'import warnings as _w\n_w.filterwarnings("ignore", message=r"JsProxy\\.as_object_map", category=RuntimeWarning)\n'
+    icerik["threadpoolctl.py"] = (sus + kod).encode()
+    with zipfile.ZipFile(yol, "w", zipfile.ZIP_DEFLATED) as z:
+        for k, v in icerik.items():
+            z.writestr(k, v)
+    yeni["threadpoolctl"] = dict(tp, sha256=hashlib.sha256(open(yol, "rb").read()).hexdigest())
+
     # PyPI'den saf Python paketleri
     for ad, (surum, bag, imp) in EK_WHEEL.items():
         tmp = os.path.join(onbellek, "pypi")
