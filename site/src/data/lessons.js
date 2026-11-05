@@ -1,5 +1,5 @@
 /* =====================================================================
-   BAŞLANGIÇ DERSLERİ — Colab'dan önce, tarayıcıda adım adım.
+   BAŞLANGIÇ DERSLERİ — Python defterlerinden önce, tarayıcıda adım adım.
    Adım türleri: read (okuma), quiz (çoktan seçmeli), sort (iki gruba ayır), code (kod alıştırması),
    predict (önce tahmin et, sonra çalıştır), parsons (kod yapbozu).
    bonus: true olan adımlar yıldızlı görevdir: zorunlu değildir, dersin sonunda açılır.
@@ -220,42 +220,45 @@ export var LESSONS = [
   ]
 },
 {
-  title: "Colab'a Hazırlık", tag: "Google Colab",
+  title: "Python Defterine Hazırlık", tag: "Python defteri",
   blurb: "Gerçek Python defterlerine geçmeden önce bilmen gerekenler.",
   steps: [
-    { type: "read", title: "Colab nedir?", html:
-      "<p><b>Google Colab</b>, internet tarayıcısında çalışan ücretsiz bir Python defteridir. Bilgisayara hiçbir şey kurman gerekmez. Kodunu Google'ın güçlü bilgisayarları çalıştırır. Yapay zekâ için de bu yüzden çok kullanılır.</p>" +
-      "<p>Bir Colab defteri iki tür <b>hücreden</b> oluşur:</p>" +
-      "<div class=\"cmp-grid two\"><div><h4>Metin hücresi</h4><p>Açıklamalar, başlıklar, resimler. Okumak için.</p></div><div><h4>Kod hücresi</h4><p>Gri kutular. İçindeki kodu <b>Shift + Enter</b> ile ya da soldaki ▶ düğmesiyle çalıştırırsın.</p></div></div>" },
-    { type: "scene", scene: "hucre", title: "Hücreler hafızayı paylaşır", html: "<p>Bu küçük bir Colab taklidi. Hücreleri farklı sıralarla çalıştır, hafızada neler olduğuna bak. Sonra <b>yeniden başlat</b>'ı dene.</p>" },
+    { type: "read", title: "Python defteri nedir?", html:
+      "<p><b>Python defteri</b> (<i>Jupyter notebook</i>), açıklamalarla kodun bir arada durduğu, kodu parça parça çalıştırabildiğin bir çalışma sayfasıdır. Yapay zekâ ve veri bilimi uzmanları en çok bu defterlerle çalışır. Bizim defterlerimiz doğrudan <b>tarayıcında</b> açılır: bilgisayara bir şey kurman ya da hesap açman gerekmez. (Aynı defterler <b>Google Colab</b>'da da açılabilir; Colab da bir Python defteridir.)</p>" +
+      "<p>Bir defter iki tür <b>hücreden</b> oluşur:</p>" +
+      "<div class=\"cmp-grid two\"><div><h4>Metin hücresi</h4><p>Açıklamalar, başlıklar, resimler. Okumak için.</p></div><div><h4>Kod hücresi</h4><p>Gri kutular. İçindeki kodu <b>Shift + Enter</b> ile ya da üstteki ▶ düğmesiyle çalıştırırsın.</p></div></div>" },
+    { type: "scene", scene: "hucre", title: "Hücreler hafızayı paylaşır", html: "<p>Bu küçük bir defter taklidi. Hücreleri farklı sıralarla çalıştır, hafızada neler olduğuna bak. Sonra <b>yeniden başlat</b>'ı dene.</p>" },
     { type: "read", title: "Üç önemli ipucu", html:
       "<ol class=\"rules-list\">" +
-        "<li><b>Önce kopyala.</b> Defter açılınca <b>Dosya → Drive'a kopya kaydet</b> seçeneğine tıkla. Böylece yaptığın değişiklikler kendi Drive'ında saklanır. (Bir Google hesabı gerekir.)</li>" +
+        "<li><b>Sekmeyi kapatma.</b> Defter tarayıcında çalışır. Sayfayı <b>yenilersen</b> ya da <b>kapatırsan</b> yaptığın değişiklikler silinir ve defter baştan açılır. Defteri bitirene kadar sekmeyi açık tut.</li>" +
         "<li><b>Hücreleri sırayla çalıştır.</b> Bir hücrede oluşturduğun değişkeni sonraki hücreler hatırlar. Ama o hücreyi <b>çalıştırmadıysan</b> değişken hiç oluşmamıştır.</li>" +
-        "<li><b>Bir şeyler karışırsa:</b> <b>Çalışma zamanı → Yeniden başlat</b> her şeyi sıfırlar. Sonra hücreleri baştan sırayla çalıştır.</li>" +
+        "<li><b>Bir şeyler karışırsa:</b> <b>Çekirdek</b> menüsündeki <b>yeniden başlat</b> komutu defterin hafızasını sıfırlar (Colab'da bu menünün adı <b>Çalışma zamanı</b>). Sonra hücreleri baştan sırayla çalıştır.</li>" +
       "</ol>" },
     { type: "quiz", q: "1. hücreye <code>x = 5</code> yazdın ama <b>çalıştırmadın</b>. 2. hücrede <code>print(x)</code> çalıştırırsan ne olur?", options: ["5 yazar", "x yazar", "Hata verir: x tanımlı değil", "0 yazar"], answer: 2,
       why: "Hücre çalıştırılmadıkça içindeki kod hiç çalışmamış sayılır. <code>x</code> kutusu oluşmadığı için Python <code>NameError</code> verir." },
-    { type: "predict", title: "Aynı hücreyi iki kere çalıştırmak", html: "<p>Colab'da 1. hücrede <code>sayac = 0</code> var. 2. hücrede <code>sayac = sayac + 1</code> ve <code>print(sayac)</code> var. 1. hücreyi bir kez, sonra 2. hücreyi <b>iki kez</b> çalıştırdın. Bu, aşağıdaki programla aynı şey. Ekranda ne görürsün?</p>",
+    { type: "predict", title: "Aynı hücreyi iki kere çalıştırmak", html: "<p>Bir defterde 1. hücrede <code>sayac = 0</code> var. 2. hücrede <code>sayac = sayac + 1</code> ve <code>print(sayac)</code> var. 1. hücreyi bir kez, sonra 2. hücreyi <b>iki kez</b> çalıştırdın. Bu, aşağıdaki programla aynı şey. Ekranda ne görürsün?</p>",
       code: "sayac = 0\n# 2. hücre, 1. çalıştırma\nsayac = sayac + 1\nprint(sayac)\n# 2. hücre, 2. çalıştırma\nsayac = sayac + 1\nprint(sayac)",
-      why: "Colab değişkenleri hatırlar. 2. hücreyi her çalıştırdığında <code>sayac</code> bir artar: önce 1, sonra 2. Sıfırdan başlamak istersen 1. hücreyi tekrar çalıştırırsın." },
+      why: "Defter değişkenleri hatırlar. 2. hücreyi her çalıştırdığında <code>sayac</code> bir artar: önce 1, sonra 2. Sıfırdan başlamak istersen 1. hücreyi tekrar çalıştırırsın." },
     { type: "parsons", title: "Hücreleri sırala", html: "<p>Bir arkadaşın defterindeki kod satırları karıştı. Parçaları <b>çalışacak sırayla</b> programa ekle. Program ekrana <b>Merhaba Mert, puanın 90</b> yazmalı.</p><p class=\"tip\">Bir parça şaşırtmaca: ona ihtiyacın yok.</p>",
       solution: "isim = \"Mert\"\npuan = 85\npuan = puan + 5\nmesaj = f\"Merhaba {isim}, puanın {puan}\"\nprint(mesaj)",
       extra: ["print(\"mesaj\")"], expect: ["Merhaba Mert, puanın 90"],
       hints: ["Bir kutuyu kullanmadan önce oluşturmalısın. <code>mesaj</code> hangi kutuları kullanıyor?", "Puan önce 85 olmalı, sonra 5 artmalı. Mesaj, puan arttıktan <b>sonra</b> hazırlanmalı.", "<code>print(\"mesaj\")</code> tırnak içinde olduğu için ekrana \"mesaj\" kelimesini yazar."] },
     { type: "read", title: "Hazırsın!", html:
       "<p>Tebrikler, başlangıç eğitimini bitirdin! Artık gerçek Python defterine geçebilirsin.</p>" +
-      "<p>Şimdi bu aşamanın kısa <b>kontrolünü</b> çözeceksin. Sonra 2. adımda ilk gerçek Python defterini, <b>Notebook 00 · Python'a Giriş</b>'i Colab'da açacaksın.</p>" +
+      "<p>Şimdi bu aşamanın kısa <b>kontrolünü</b> çözeceksin. Sonra 2. adımda ilk gerçek Python defterini, <b>Notebook 00 · Python'a Giriş</b>'i açacaksın.</p>" +
       "<p>Defterin en sonunda bir <b>tamamlama kodu</b> hücresi var. Defteri bitirip o hücreyi çalıştırınca bir kod alacaksın; o kodu sitede yazınca defter tamamlanmış sayılacak.</p>" }
   ]
 }
 ];
 
 /* =====================================================================
-   COLAB DEFTERLERİ — GitHub'daki notebook'lar Colab'da açılır.
+   PYTHON DEFTERLERİ — tarayıcıda (JupyterLite) ya da Colab'da açılır.
    Repo değişirse sadece REPO satırını güncellemek yeter.
    ===================================================================== */
 export var REPO = "akgulnursima0349/python-atolyesi";
+/* Tarayıcı sürümü (JupyterLite): sitenin /defter/ klasöründe. Önizlemelerde GitHub Pages'teki kopyaya gider. */
+const DEFTER_KOK = typeof location !== "undefined" && /github\.io$/.test(location.hostname) ? "./defter/" : "https://" + REPO.split("/")[0] + ".github.io/" + REPO.split("/")[1] + "/defter/";
+export function defterUrl(file) { return DEFTER_KOK + "notebooks/index.html?path=" + encodeURIComponent(file); }
 export function colabUrl(file, ogretmen) { return "https://colab.research.google.com/github/" + REPO + "/blob/main/notebooks/" + (ogretmen ? "ogretmen/" : "") + file; }
 /* kodOzet: defterin sonundaki "tamamlama kodu" hücresinin verdiği kodun SHA-256 özeti (kodun kendisi sitede yazmaz). */
 export var NOTEBOOKS = {

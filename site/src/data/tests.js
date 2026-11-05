@@ -88,7 +88,7 @@ export var KONTROLLER = [
       why: "Satırlar sırayla çalışır: x önce 10, sonra 10 - 3 = 7 olur." },
     { q: "<code>Servo motor;</code> satırında <code>motor</code> nedir?", options: ["Bir sınıf", "Servo sınıfından üretilmiş bir nesne", "Bir metot", "Bir yorum"], answer: 1,
       why: "Servo kalıp (sınıf), motor ise o kalıptan üretilen nesnedir." },
-    { q: "Colab'da 1. hücreyi hiç çalıştırmadan 2. hücreyi çalıştırdın ve NameError aldın. Ne yapmalısın?", options: ["Bilgisayarı kapatıp açmak", "Önce 1. hücreyi çalıştırmak", "2. hücreyi silmek", "Hiçbir şey, hata normal"], answer: 1,
+    { q: "Python defterinde 1. hücreyi hiç çalıştırmadan 2. hücreyi çalıştırdın ve NameError aldın. Ne yapmalısın?", options: ["Bilgisayarı kapatıp açmak", "Önce 1. hücreyi çalıştırmak", "2. hücreyi silmek", "Hiçbir şey, hata normal"], answer: 1,
       why: "Değişken 1. hücrede oluşuyor. O hücre çalışmadıkça değişken yoktur." }
   ]},
   { title: "Notebook 00 kontrolü", sorular: [

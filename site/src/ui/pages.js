@@ -1,5 +1,5 @@
 /* Giriş sayfası, aşama sayfaları ve başlangıç dersleri. */
-import { LESSONS, NOTEBOOKS, colabUrl } from "../data/lessons.js";
+import { LESSONS, NOTEBOOKS, colabUrl, defterUrl } from "../data/lessons.js";
 import { STATIONS } from "../data/stations.js";
 import { Atolye } from "../engine/atolye.js";
 import { $, $$, esc, icon, save, persist, hooks, PHASES, phaseDone, totals, lessonOpen, doneCount, reqCount, bonusDone, isBonus, PHASE_STATIONS, testDone, hueVars, setHue, art, imageUrl, shell, setupEditor, getCode, setCode, markErr, clearErr, errorHtml, pythonReady, confetti } from "./core.js";
@@ -22,9 +22,10 @@ export function nbCard(id) {
       <p class="nb-tip" id="kodnot-${id}">Kodu, defterin <b>en sonundaki</b> hücreyi çalıştırınca alırsın. O hücre, önemli bölümleri çalıştırıp çalıştırmadığını kontrol eder.</p><div class="nb-msg" id="kodmsg-${id}" role="alert"></div>`;
   return `<article class="nb${done ? " done" : ""}"><span class="nb-mark">${icon("notebook")}</span><div>
     <h3>${nb.title}</h3><span class="file">${nb.file}</span><p>${nb.desc}</p>
-    <div class="nb-actions"><a class="btn btn--primary" href="${colabUrl(nb.file)}" target="_blank" rel="noopener">Colab'da aç ${icon("ext")}</a>
-      ${t ? `<a class="btn" href="${colabUrl(nb.file, true)}" target="_blank" rel="noopener">Çözümlü sürüm ${icon("ext")}</a>` : ""}</div>
-    <p class="nb-tip">Defter açılınca önce <b>Dosya → Drive'a kopya kaydet</b>, böylece çalışman kaybolmaz.${t ? " <b>Çözümlü sürüm</b> sadece öğretmen hesabında görünür." : ""}</p>
+    <div class="nb-actions"><a class="btn btn--primary" href="${defterUrl(nb.file)}" target="_blank" rel="noopener">Defteri aç ${icon("ext")}</a>
+      <a class="btn btn--quiet" href="${colabUrl(nb.file)}" target="_blank" rel="noopener">Colab'da aç ${icon("ext")}</a>
+      ${t ? `<a class="btn" href="${colabUrl(nb.file, true)}" target="_blank" rel="noopener">Çözümlü sürüm (Colab) ${icon("ext")}</a>` : ""}</div>
+    <p class="nb-tip">Defter tarayıcıda açılır, <b>hesap gerekmez</b>. İlk açılış biraz sürebilir. Sayfayı yenilersen ya da kapatırsan çalışman silinir; defteri bitirene kadar sekmeyi açık tut. Google hesabın varsa <b>Colab'da</b> açıp Drive'ına kopyalayabilirsin.${t ? " <b>Çözümlü sürüm</b> sadece öğretmen hesabında görünür." : ""}</p>
     <div class="nb-finish">${act}</div></div></article>`;
 }
 /* SHA-256: tarayıcının kendi aracı (https'te), yoksa küçük yedek uygulama */
@@ -89,8 +90,8 @@ export function showLanding() {
         <img class="landing-logo" id="landingLogo" src="${imageUrl("logo")}" alt="Sivas Robotik Akademi" width="176" height="176">
         <p class="eyebrow">Sivas Robotik Akademi · Ortaokul</p>
         <h1>Python <em>Atölyesi</em></h1>
-        <p class="lead">Python'u temelden öğren, Google Colab'da gerçek defterlerle çalış ve kursun sonunda kendi makine öğrenmesi modellerini kur.</p>
-        <div class="meta" style="margin-top:16px"><span>${icon("cap")} ${LESSONS.length} başlangıç dersi</span><span>${icon("notebook")} ${Object.keys(NOTEBOOKS).length} Colab defteri</span><span>${icon("layers")} ${STATIONS.length} uygulama istasyonu</span><span>${icon("clipboard")} ön test ve son test</span></div>
+        <p class="lead">Python'u temelden öğren, gerçek Python defterleriyle çalış ve kursun sonunda kendi makine öğrenmesi modellerini kur.</p>
+        <div class="meta" style="margin-top:16px"><span>${icon("cap")} ${LESSONS.length} başlangıç dersi</span><span>${icon("notebook")} ${Object.keys(NOTEBOOKS).length} Python defteri</span><span>${icon("layers")} ${STATIONS.length} uygulama istasyonu</span><span>${icon("clipboard")} ön test ve son test</span></div>
         <div class="landing-cta">${landingCta(started, resume, t)}</div>
       </div>
       ${art("hero", "brand", "cpu", "Robotik atölyesinde Python çalışan öğrenciler")}
@@ -149,7 +150,7 @@ export function showPhase(n) {
   } else if (n === 3) {
     meta = `<span>${icon("notebook")} 1 defter</span><span>${icon("apple")} Model Atölyesi</span><span>${icon("clock")} 4–5 ders saati</span>`;
     body = `<div class="nb-list" style="max-width:760px">${nbCard("nb01")}</div>
-      <div class="sub-head"><h2>Defterden sonra: kendi modelini sıfırdan yaz</h2><p class="muted">Colab'da <code>KNeighborsClassifier</code> ile tek satırda kurduğun modeli, burada kendi Python kodunla adım adım kuracaksın.</p></div>
+      <div class="sub-head"><h2>Defterden sonra: kendi modelini sıfırdan yaz</h2><p class="muted">Defterde <code>KNeighborsClassifier</code> ile tek satırda kurduğun modeli, burada kendi Python kodunla adım adım kuracaksın.</p></div>
       <div class="station-grid station-grid--one">${PHASE_STATIONS(3).map(stationCard).join("")}</div>`;
   } else {
     meta = `<span>${icon("flask")} 3 laboratuvar</span><span>${icon("clock")} her biri ~2 ders saati</span>`;
@@ -357,7 +358,7 @@ function lessonEnd() {
   const L = LESSONS[LS.li], next = LS.li + 1 < LESSONS.length, req = reqSteps(L);
   const bonus = L.steps.map((s, i) => ({ s, i })).filter((x) => x.s.bonus), bd = bonus.filter((x) => save.done["ders-" + LS.li + "-b" + x.i]).length;
   root().innerHTML = shell(`<section class="sheet summary"><span class="big">${icon("check")}</span><h2>${L.title} tamamlandı</h2>
-    <p>${next ? "Sıradaki ders: <b>" + LESSONS[LS.li + 1].title + "</b>" : "Başlangıç dersleri bitti. Şimdi aşama kontrolünü çöz, sonra Google Colab'daki ilk gerçek Python defterine geç."}</p>
+    <p>${next ? "Sıradaki ders: <b>" + LESSONS[LS.li + 1].title + "</b>" : "Başlangıç dersleri bitti. Şimdi aşama kontrolünü çöz, sonra ilk gerçek Python defterine geç."}</p>
     ${bonus.length && bd < bonus.length ? `<div class="bonus-offer">${icon("star")}<div><b>Erken mi bitirdin?</b><p>Bu derste ${bonus.length} yıldızlı görev var. Zorunlu değil, ama biraz daha zorlar.</p></div><button class="btn" id="goBonus">Yıldızlı göreve geç ${icon("right")}</button></div>` : ""}
     <div class="row"><a class="btn" href="#asama-1">Bütün dersler</a><a class="btn btn--primary" href="${next ? "#ders-" + (LS.li + 2) : "#kontrol-1"}">${next ? "Sonraki ders" : "Aşama kontrolü"} ${icon("right")}</a></div></section>`, 0);
   bindShell();

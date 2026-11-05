@@ -194,7 +194,7 @@ function hucre(host) {
   const CELLS = [`isim = "Ece"`, `sayac = 0`, `sayac = sayac + 1\nprint(isim, sayac)`];
   let ran = [], count = 0;
   host.innerHTML = `<div class="sc"><div class="cells">${CELLS.map((c, i) => `<div class="cell" data-i="${i}"><button class="cell-run" data-run="${i}" aria-label="${i + 1}. hücreyi çalıştır">${icon("play")}</button><span class="cell-n">[ ]</span><pre>${esc(c)}</pre><div class="cell-out"></div></div>`).join("")}</div>
-    <div class="cell-mem"><div class="tr-l">Colab'ın hafızası</div><div class="tr-frame" id="clMem"><span class="muted small">Boş. Henüz hiçbir hücre çalışmadı.</span></div>
+    <div class="cell-mem"><div class="tr-l">Defterin hafızası</div><div class="tr-frame" id="clMem"><span class="muted small">Boş. Henüz hiçbir hücre çalışmadı.</span></div>
     <button class="btn btn--sm" id="clReset">${icon("reset")} Çalışma zamanını yeniden başlat</button></div><div class="sc-say">Hücreleri <b>istediğin sırayla</b> çalıştır. Önce 3. hücreyi denemek ister misin?</div></div>`;
   function run(i) {
     const prefix = ran.map((k) => CELLS[k]).join("\n"), full = (prefix ? prefix + "\n" : "") + "print('@@SINIR@@')\n" + CELLS[i] + "\n";
@@ -203,10 +203,10 @@ function hucre(host) {
     $(".cell-n", cell).textContent = `[${count}]`;
     if (r.error) {
       $(".cell-out", cell).innerHTML = `<span class="err-t">${esc(r.error.type)}</span> ${r.error.msg}`;
-      say(host, `<b>Hata!</b> Bu hücre, Colab'ın hafızasında henüz olmayan bir kutuyu kullanmaya çalıştı. Kutuyu oluşturan hücreyi <b>önce</b> çalıştırmalısın.`);
+      say(host, `<b>Hata!</b> Bu hücre, defterin hafızasında henüz olmayan bir kutuyu kullanmaya çalıştı. Kutuyu oluşturan hücreyi <b>önce</b> çalıştırmalısın.`);
     } else {
       ran.push(i); $(".cell-out", cell).textContent = mine;
-      say(host, i === 2 && ran.filter((k) => k === 2).length > 1 ? `Aynı hücreyi bir daha çalıştırdın: <b>sayac</b> kaldığı yerden bir arttı. Colab hafızayı <b>silmez</b>, hücreler hafızayı paylaşır.` : `Hücre çalıştı. Oluşturduğu kutular Colab'ın hafızasına eklendi; diğer hücreler de bunları kullanabilir.`);
+      say(host, i === 2 && ran.filter((k) => k === 2).length > 1 ? `Aynı hücreyi bir daha çalıştırdın: <b>sayac</b> kaldığı yerden bir arttı. Defter hafızayı <b>silmez</b>, hücreler hafızayı paylaşır.` : `Hücre çalıştı. Oluşturduğu kutular Defterin hafızasına eklendi; diğer hücreler de bunları kullanabilir.`);
     }
     const end = r.end.frames[0] ? r.end.frames[0].vars : {};
     const mem = Object.entries(r.error ? lastVars : end); if (!r.error) lastVars = end;

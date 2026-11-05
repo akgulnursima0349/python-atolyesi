@@ -95,13 +95,13 @@ export const PHASES = [
     lead: "Programlama dili nedir, Python'u \"yüksek seviyeli\" yapan ne, Arduino'da yazdığınız C++ ile farkı ne, nesne nedir? Kısa dersler, her birinde alıştırmalar.",
     outline: "Programlama dili, Python ve Arduino karşılaştırması, nesneler." },
   { short: "Notebook 00", title: "Python'a Giriş", hue: "colab", icon: "notebook", slot: "phase-2",
-    lead: "İlk gerçek Python defteri. Google Colab'da, öğretmeninle birlikte hücre hücre ilerleyeceksiniz.",
-    outline: "Colab'da ilk gerçek Python defteri." },
+    lead: "İlk gerçek Python defteri. Tarayıcıda açılır; öğretmeninle birlikte hücre hücre ilerleyeceksiniz.",
+    outline: "İlk gerçek Python defteri." },
   { short: "İstasyonlar", title: "Uygulama istasyonları", hue: "piksel", icon: "layers", slot: "phase-3",
     lead: "Notebook 00'da öğrendiklerini altı istasyonda kullan: çıktı tahmin et, kod yapbozu çöz, hata mesajı oku, şifre kır, piksel piksel resim yap, kendi sohbet botunu yaz.",
     outline: "Altı istasyonda öğrendiklerini uygula." },
   { short: "Notebook 01", title: "Yapay Zekânın Alet Çantası", hue: "bot", icon: "brain", slot: "phase-4",
-    lead: "Sohbet botu istasyonunun sonunda gördüğün fikir: kurallar yerine örneklerden öğrenmek. Önce Colab'da bunun araçlarını tanı, sonra Model Atölyesi'nde aynı modeli kendi kodunla sıfırdan kur.",
+    lead: "Sohbet botu istasyonunun sonunda gördüğün fikir: kurallar yerine örneklerden öğrenmek. Önce defterde bunun araçlarını tanı, sonra Model Atölyesi'nde aynı modeli kendi kodunla sıfırdan kur.",
     outline: "NumPy, Pandas, scikit-learn ve Model Atölyesi." },
   { short: "Lab'lar", title: "Makine öğrenmesi lab'ları", hue: "lab", icon: "flask", slot: "phase-5",
     lead: "Gerçek veriyle üç laboratuvar: el yazısı rakam tanıma, penguen türü tahmini ve K-Means ile renk sanatı.",
@@ -195,7 +195,7 @@ export function clearErr() { if (cm && errMark) { cm.removeLineClass(errMark, "b
 
 export function errorHtml(err, code, task) {
   const raw = err.raw ? `<div class="errraw">${err.line ? `<span class="ln">${err.line}. satır · </span>` : ""}${esc(err.raw)}</div>` : "";
-  const colab = task && task.colab && code === task.code ? `<p class="colab-note">Colab'da (bilgisayardaki Python'da) bu hata şöyle yazar: <code>${esc(task.colab)}</code></p>` : "";
+  const colab = task && task.colab && code === task.code ? `<p class="colab-note">Python defterinde bu hata şöyle yazar: <code>${esc(task.colab)}</code></p>` : "";
   return raw + `<p>${err.msg}</p>` + colab;
 }
 export function pythonReady() { return !!window.Sk; }

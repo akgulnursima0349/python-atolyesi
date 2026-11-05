@@ -1,0 +1,5 @@
+jupyterlite-core==0.8.7
+jupyterlite-pyodide-kernel==0.8.6
+jupyterlab-language-pack-tr-TR==4.5.post3
+jupyter-server==2.17.0
+jupyterlab-server==2.28.0
