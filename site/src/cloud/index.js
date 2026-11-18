@@ -53,7 +53,7 @@ export const onCloud = (f) => { cloud.listeners.add(f); return () => cloud.liste
 async function connect() {
   if (AYAR.mock) { const m = await import("./mock.js"); return m.mockApi(); }
   const { createClient } = await import("@supabase/supabase-js");
-  const sb = createClient(AYAR.supabaseUrl, AYAR.supabaseKey, { auth: { persistSession: true, autoRefreshToken: true, storageKey: "python-atolyesi-auth" } });
+  const sb = createClient(AYAR.supabaseUrl, AYAR.supabaseKey, { auth: { persistSession: true, autoRefreshToken: true, storageKey: AYAR.storageKey || "python-atolyesi-auth" } }); // platform altında üç uygulama ortak anahtarla aynı oturumu paylaşır
   const unwrap = ({ data, error }) => { if (error) { const e = new Error(error.message); e.code = error.message; throw e; } return data; };
   return {
     rpc: async (fn, args) => unwrap(await sb.rpc(fn, args || {})),
